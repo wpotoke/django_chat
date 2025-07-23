@@ -1,0 +1,13 @@
+.env
+.vscode
+*.pyc
+cache/
+media
+venv
+__pycache__/
+.coverage
+.pytest_cache/
+htmlcov/
+.cache/
+.mypy_cache/
+.ruff_cache/

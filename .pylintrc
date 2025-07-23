@@ -1,0 +1,24 @@
+[MASTER]
+ignore=venv
+jobs=1
+load-plugins=pylint_django
+django-settings-module="django_channels_chat.settings"
+persistent=yes
+
+[MESSAGES CONTROL]
+disable =
+    missing-docstring,
+    unused-import,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-locals
+
+[FORMAT]
+max-line-length=110
+
+[DESIGN]
+max-args=5
+max-locals=15
+
+[REPORTS]
+output-format = colorized
