@@ -1,0 +1,5 @@
+[tool.black]
+line-length = 110
+
+[tool.ruff.lint]
+ignore = ["F401", "F841"]
