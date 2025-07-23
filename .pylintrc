@@ -9,6 +9,7 @@ persistent=yes
 disable =
     missing-docstring,
     unused-import,
+    unused-argument,
     too-few-public-methods,
     too-many-arguments,
     too-many-locals
