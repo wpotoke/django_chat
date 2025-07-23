@@ -14,7 +14,7 @@ disable =
     too-many-locals
 
 [FORMAT]
-max-line-length=110
+max-line-length=120
 
 [DESIGN]
 max-args=5
