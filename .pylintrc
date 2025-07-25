@@ -17,7 +17,6 @@ disable =
 
 [FORMAT]
 max-line-length=120
-module-rgx = '^[a-z][a-z0-9_]*$'
 
 [DESIGN]
 max-args=5
