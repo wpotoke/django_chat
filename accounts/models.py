@@ -1,10 +1,10 @@
 from django.core.validators import RegexValidator
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from accounts.manager import MyUserManager
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(
         max_length=30,
         unique=True,
@@ -16,32 +16,33 @@ class User(AbstractBaseUser):
             )
         ],
         error_messages={
-            "unique": "This username already bussy.",
+            "unique": "This username is already taken.",
         },
     )
-    email: models.EmailField = models.EmailField(max_length=255, verbose_name="Email", unique=True)
-    is_active: models.BooleanField = models.BooleanField(default=True)
-    is_admin: models.BooleanField = models.BooleanField(default=True)
-    created: models.DateTimeField = models.DateTimeField(auto_now_add=True)
+    email = models.EmailField(max_length=255, verbose_name="Email", unique=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
     phone_regex = RegexValidator(
         regex=r"^((\+7)|8)\d{10}$",
         message="Phone number must be entered in the format: '+79999999999' or '89999999999'.",
     )
-    phone_number: models.CharField = models.CharField(validators=[phone_regex], max_length=12, null=True, blank=True)
+    phone_number = models.CharField(validators=[phone_regex], max_length=12, null=True, blank=True, unique=True)
     objects = MyUserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS: list[str] = ["username"]
+    REQUIRED_FIELDS = ["username"]
 
     def __str__(self) -> str:
         return str(self.email)
 
     def has_perm(self, perm, obj=None) -> bool:
-        return True
+        return self.is_superuser or super().has_perm(perm, obj)
 
     def has_module_perms(self, app_label) -> bool:
-        return True
+        return self.is_superuser or super().has_module_perms(app_label)
 
     @property
-    def is_staff(self) -> bool:
-        return self.is_admin
+    def is_admin(self) -> bool:
+        return self.is_staff or self.is_superuser
