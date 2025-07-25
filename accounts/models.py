@@ -5,6 +5,20 @@ from accounts.manager import MyUserManager
 
 
 class User(AbstractBaseUser):
+    username = models.CharField(
+        max_length=30,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r"^[a-z_]+$",
+                message="Username may only contain lowercase English letters and underscores",
+                code="invalid_username",
+            )
+        ],
+        error_messages={
+            "unique": "This username already bussy.",
+        },
+    )
     email: models.EmailField = models.EmailField(max_length=255, verbose_name="Email", unique=True)
     is_active: models.BooleanField = models.BooleanField(default=True)
     is_admin: models.BooleanField = models.BooleanField(default=True)
@@ -17,7 +31,7 @@ class User(AbstractBaseUser):
     objects = MyUserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS: list[str] = []
+    REQUIRED_FIELDS: list[str] = ["username"]
 
     def __str__(self) -> str:
         return str(self.email)

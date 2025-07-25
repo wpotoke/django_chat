@@ -10,10 +10,10 @@ User = get_user_model()
 class CustomUserAdmin(UserAdmin):
     add_form = UserCreationForm
 
-    list_display = ("email", "phone_number", "is_admin")
+    list_display = ("username", "email", "phone_number", "is_admin")
     list_filter = ("is_admin",)
     fieldsets = (
-        (None, {"fields": ("email", "password")}),
+        (None, {"fields": ("username", "email", "password")}),
         ("Permissions", {"fields": ("is_admin",)}),
     )
     add_fieldsets = (

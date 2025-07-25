@@ -14,6 +14,7 @@ class UserCreationForm(forms.ModelForm):
     class Meta:
         model = User
         fields: tuple[str, ...] = (
+            "username",
             "email",
             "phone_number",
         )
