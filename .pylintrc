@@ -5,6 +5,7 @@ load-plugins=pylint_django
 django-settings-module="django_channels_chat.settings"
 persistent=yes
 
+
 [MESSAGES CONTROL]
 disable =
     missing-docstring,
@@ -16,6 +17,7 @@ disable =
 
 [FORMAT]
 max-line-length=120
+module-rgx = '^[a-z][a-z0-9_]*$'
 
 [DESIGN]
 max-args=5

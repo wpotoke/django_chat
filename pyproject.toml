@@ -3,3 +3,7 @@ line-length = 120
 
 [tool.ruff.lint]
 ignore = ["F401", "F841"]
+exclude = ["*/migrations/*"]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
