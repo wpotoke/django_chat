@@ -1,4 +1,3 @@
-from typing import Type
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
@@ -8,23 +7,47 @@ User = get_user_model()
 
 
 class UserCreationForm(forms.ModelForm):
-    password1: forms.CharField = forms.CharField(label="password", widget=forms.PasswordInput)
-    password2: forms.CharField = forms.CharField(label="Enter Password Again", widget=forms.PasswordInput)
+    password1 = forms.CharField(
+        label="password",
+        min_length=8,
+        required=True,
+        widget=forms.PasswordInput(attrs={"class": "input", "placeholder": "Create Password"}),
+        help_text="Password must be at least 8 characters",
+    )
+    password2 = forms.CharField(
+        min_length=8,
+        required=True,
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={"class": "input", "placeholder": "Confirm Password"}),
+    )
 
     class Meta:
         model = User
-        fields: tuple[str, ...] = (
+        fields = (
             "username",
             "email",
             "phone_number",
         )
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "input", "placeholder": "Enter your username"}),
+            "email": forms.EmailInput(attrs={"class": "input", "placeholder": "Enter your Email"}),
+            "phone_number": forms.TextInput(attrs={"class": "input", "placeholder": "Phone number"}),
+        }
 
-    def clean_password(self) -> str | None:
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("This email is already in use. Please use a different email.")
+        return email
+
+    def clean(self):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
+
         if password1 and password2 and password1 != password2:
             raise ValidationError("Passwords don't match")
-        return password2
+
+        return self.cleaned_data
 
     def save(self, commit: bool = True):
         user = super().save(commit=False)
