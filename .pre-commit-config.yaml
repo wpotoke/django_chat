@@ -20,7 +20,11 @@ repos:
         # Исключаем миграции для mypy
         exclude: .*/migrations/.*
         # Дополнительные зависимости для Django
-        additional_dependencies: [django-stubs]
+        additional_dependencies: 
+          - django-stubs
+          - types-requests
+          - types-python-dateutil
+        args: [--config-file=pyproject.toml]
 
   - repo: local
     hooks:
