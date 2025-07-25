@@ -3,16 +3,25 @@ repos:
     rev: v0.4.3
     hooks:
       - id: ruff
+        # Исключаем проверку миграций
+        exclude: .*/migrations/.*
 
   - repo: https://github.com/psf/black
     rev: 23.9.1
     hooks:
       - id: black
+        # Black обычно не проверяет миграции, но можно явно исключить
+        exclude: .*/migrations/.*
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.6.0
     hooks:
       - id: mypy
+        # Исключаем миграции для mypy
+        exclude: .*/migrations/.*
+        # Дополнительные зависимости для Django
+        additional_dependencies: [django-stubs]
+
   - repo: local
     hooks:
       - id: pylint
@@ -20,4 +29,5 @@ repos:
         entry: pylint
         language: system
         types: [python]
-        args: [--rcfile=.pylintrc]  # если есть конфиг
+        exclude: .*/migrations/.*
+        args: [--rcfile=.pylintrc]
