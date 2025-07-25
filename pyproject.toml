@@ -4,11 +4,3 @@ line-length = 120
 [tool.ruff.lint]
 ignore = ["F401", "F841"]
 exclude = ["*/migrations/*"]
-
-[tool.mypy]
-disable_error_code = "misc"
-plugins = ["mypy_django_plugin.main"]
-
-[tool.django-stubs]
-django_settings_module = "django_channels_chat.settings"
-strict_settings = false
