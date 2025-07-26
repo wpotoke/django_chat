@@ -25,3 +25,9 @@ class MyUserManager(BaseUserManager):
             raise ValueError("Суперпользователь должен иметь is_superuser=True")
 
         return self.create_user(username, email, password=password, **extra_fields)
+
+    def get_by_natural_key(self, username):
+        try:
+            return self.get(email=username)
+        except self.model.DoesNotExist:
+            return None
