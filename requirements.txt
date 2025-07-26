@@ -7,7 +7,7 @@ colorama==0.4.6
 dill==0.4.0
 distlib==0.4.0
 Django==5.0
-django-stubs==5.2.2
+django-recaptcha==4.1.0
 django-stubs-ext==5.2.2
 filelock==3.18.0
 identify==2.6.12
@@ -23,6 +23,7 @@ pre_commit==4.2.0
 pylint==3.3.7
 pylint-django==2.6.1
 pylint-plugin-utils==0.9.0
+python-dotenv==1.1.1
 PyYAML==6.0.2
 ruff==0.12.4
 sqlparse==0.5.3
