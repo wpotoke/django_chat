@@ -35,6 +35,8 @@ ALLOWED_HOSTS: list[str] = []
 # Application definition
 
 INSTALLED_APPS = [
+    "channels",
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -75,6 +77,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "django_channels_chat.wsgi.application"
+ASGI_APPLICATION = "django_channels_chat.asgi.application"
 
 
 # Database
@@ -122,6 +125,17 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                "redis://127.0.0.1:6379",
+            ],
+        },
+    },
+}
 
 
 # Static files (CSS, JavaScript, Images)
