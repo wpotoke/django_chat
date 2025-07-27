@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+    <h1 style="margin-top: 3px;">My Django Chat Home Page</h1>
+    <ul>
+        {% for group in groups %}
+            <div id="{{ group.uuid }}">
+                <li><a>{{ group.name }}</a></li>
+                {% if request.user in group.members.all %}
+                    <button id="leave-{{ group.uuid }}" class="group_option" value="leave_group {{ group.uuid }}">
+                        Leave
+                    </button>
+                    <button id="open-{{ group.uuid }}" class="group_option" value="open_group {{ group.uuid }}">Open
+                    </button>
+                {% else %}
+                    <button id="join-{{ group.uuid }}" class="group_option" value="join_group {{ group.uuid }}">
+                        Join
+                    </button>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+    </ul>
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/join_and_leave_event.js' %}"></script>
+{% endblock %}
