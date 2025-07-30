@@ -1,29 +1,47 @@
-{% extends 'base.html'%} 
+<!-- HTML шаблон -->
+{% extends 'base.html' %}
 {% load static %}
 {% block css %}
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
-{% endblock  %}
-{% block title %} Chat Room{% endblock title %}
+{% endblock %}
+{% block title %}Chat Room{% endblock title %}
 
 {% block content %}
-<textarea id="chat-log" cols="100" rows="20"></textarea><br>
-<input id="chat-message-input" type="text" size="100"><br>
-<input id="chat-message-submit" type="button" value="Send">
-<script>
-  document.querySelector('#chat-log').value = ""
-  {% for message_event in message_and_event_list %}
-    document.querySelector('#chat-log').value += ( {{ message_event|escapejs }}  + '\n');
-  {%endfor%}
-</script>
-
-<h3>Group Members</h3>
-<ul id="members">
-  {% for member in group_members %}
-    <li id="members-{{ member.username }}">{{ member }}</li>
-  {% endfor %}
-</ul>
+<div class="chat-container">
+    <div class="sidebar">
+        <h3 class="members-title">Участники</h3>
+        <ul id="members" class="members-list">
+            {% for member in group_members %}
+                <li id="members-{{ member.username }}" class="member-item">{{ member.username }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="chat-area">
+        <div id="chat-log">
+            {% for message_event in message_and_event_list %}
+                {% if message_event.author %}
+                    <div class="message">
+                        <span class="message-time">{{ message_event.timestamp|time:"H:i" }}</span>
+                        <span class="message-author">{{ message_event.author.username }}:</span>
+                        <span class="message-text">{{ message_event.content }}</span>
+                    </div>
+                {% else %}
+                    <div class="system-message">
+                        {{ message_event }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <div class="input-area">
+            <input id="chat-message-input" type="text" class="message-input" placeholder="Напишите сообщение...">
+            <button id="chat-message-submit" class="send-button">Отправить</button>
+        </div>
+    </div>
+</div>
 {% endblock content %}
 
 {% block script %}
-  <script src="{% static "js/group.js" %}"></script>
-{% endblock  %}
+    <script src="{% static "js/group.js" %}"></script>
+{% endblock %}
