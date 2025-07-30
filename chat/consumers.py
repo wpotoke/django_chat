@@ -55,18 +55,37 @@ class GroupConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         text_data = json.loads(text_data)
         type_event = text_data.get("type", None)
-        message = text_data.get("message", None)
+        message_content = text_data.get("message", None)
+
         if type_event == "text_message":
-            user = self.user
+            # Создаем сообщение в БД
             message = await database_sync_to_async(Message.objects.create)(
-                author=user, content=message, group=self.group
+                author=self.user, content=message_content, group=self.group
             )
-        await self.channel_layer.group_send(
-            self.group_uuid, {"type": "text_message", "message": str(message), "author": self.user.email}
-        )
 
-    async def text_message(self, event):
-        message = event["message"]
+            # Отправляем сообщение в группу
+            await self.channel_layer.group_send(
+                self.group_uuid,
+                {
+                    "type": "chat_message",  # Это указывает на метод обработчика
+                    "content": message.content,
+                    "username": self.user.username,
+                    "timestamp": str(message.timestamp),
+                    "message_type": "user_message",
+                },
+            )
 
-        returned_data = {"type": "text_message", "message": message, "group_uuid": self.group_uuid}
-        await self.send(json.dumps(returned_data))
+    async def chat_message(self, event):
+        # Формируем данные для отправки клиенту
+        response_data = {
+            "message": event.get("content", ""),
+            "username": event.get("username", ""),
+            "timestamp": event.get("timestamp", ""),
+            "is_own": (self.user.username == event.get("username", None)),
+        }
+
+        # Добавляем статус для событий Join/Left
+        if event.get("status"):
+            response_data["status"] = event["status"]
+
+        await self.send(text_data=json.dumps(response_data))
