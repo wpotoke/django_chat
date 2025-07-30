@@ -1,21 +1,31 @@
 /* Основные стили */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .chat-container {
   display: flex;
-  height: 80vh;
-  max-width: 1200px;
-  margin: 20px auto;
-  border: 1px solid #333;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  height: 100vh;
+  max-width: none;
+  margin: 0;
+  border: none;
+  box-shadow: none;
   font-family: 'Arial', sans-serif;
+  background-color: #111;
 }
 
 /* Сайдбар с участниками */
 .sidebar {
   width: 250px;
+  height: 100%;
   background-color: #222;
   color: white;
   padding: 15px;
   border-right: 1px solid #e3b9f4;
+  overflow-y: auto;
 }
 
 .members-title {
@@ -43,6 +53,7 @@
   display: flex;
   flex-direction: column;
   background-color: #111;
+  height: 100%;
 }
 
 #chat-log {
