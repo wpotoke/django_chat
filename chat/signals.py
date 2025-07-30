@@ -8,9 +8,14 @@ from .models import Event
 @receiver(post_save, sender=Event)
 def broadcast_event_to_groups(sender, instance, **kwargs):
     channel_layer = get_channel_layer()
-    group_uuid = str(instance.group.uuid)
-    event_message = str(instance)
     async_to_sync(channel_layer.group_send)(
-        group_uuid,
-        {"type": "text_message", "message": event_message, "status": instance.type, "user": str(instance.user)},
+        str(instance.group.uuid),
+        {
+            "type": "chat_message",  # Важно: тот же тип обработчика
+            "content": str(instance),
+            "username": instance.user.username,
+            "status": "Join" if instance.type == "Join" else "Left",
+            "timestamp": str(instance.timestamp),
+            "message_type": "event",
+        },
     )
