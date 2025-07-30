@@ -56,8 +56,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Profile(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name="Пользователь")
     slug = models.SlugField(max_length=255, blank=True, verbose_name="URL", unique=True)
-    first_name = models.CharField(max_length=200, verbose_name="Имя")
-    last_name = models.CharField(max_length=255, verbose_name="Фамилия")
+    first_name = models.CharField(max_length=200, verbose_name="Имя", default="John")
+    last_name = models.CharField(max_length=255, verbose_name="Фамилия", default="Doe")
     avatar = models.ImageField(
         verbose_name="Аватар",
         upload_to="images/avatars/%Y/%m/%d",
@@ -65,7 +65,7 @@ class Profile(models.Model):
         blank=True,
         validators=[FileExtensionValidator(allowed_extensions=("png", "jpg", "jpeg"))],
     )
-    bio = models.TextField(max_length=192, blank=True, verbose_name="Инфа о себе")
+    bio = models.TextField(max_length=192, null=True, blank=True, verbose_name="Инфа о себе")
     birthday = models.DateField(null=True, blank=True, verbose_name="Дата рождения")
 
     class Meta:
