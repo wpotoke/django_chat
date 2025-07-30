@@ -1,90 +1,160 @@
-/* From Uiverse.io by ahmed150up */ 
-.card-container {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    margin: 20px;
-    display: flex;
-    flex-direction: column;
-    width: 280px;
-  }
-  
-  .card-header {
-    display: flex;
-    align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ccc;
-  }
-  
-  .card-header .img-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    margin-right: 20px;
-    background-color: #333;
-  }
-  
-  .card-header .text-chat {
-    color: black;
-    margin: 0;
-    font-size: 20px;
-  }
-  
-  .card-body {
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  .messages-container {
-    padding: 15px;
-  }
-  
-  .message-box {
-    padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 10px;
-  }
-  
-  .message-box.left {
-    background-color: #f1f1f1;
-    color: black;
-    font-size: 13px;
-    left: 0;
-  }
-  
-  .message-box.right {
-    background-color: #333;
-    color: #fff;
-    font-size: 13px;
-    right: 0;
-  }
-  
-  .message-input {
-    padding: 5px;
-    border-top: 1px solid #ccc;
-  }
-  
-  .message-input .message-send {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    resize: none;
-  }
-  
-  .message-input .button-send {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    margin-left: 10px;
-    border-radius: 10px;
-    font-size: 13px;
-  }
-  
-  .message-input .button-send:hover {
-    background-color: #f1f1f1;
-    color: #333;
-  }
-  
+/* Основные стили */
+.chat-container {
+  display: flex;
+  height: 80vh;
+  max-width: 1200px;
+  margin: 20px auto;
+  border: 1px solid #333;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Сайдбар с участниками */
+.sidebar {
+  width: 250px;
+  background-color: #222;
+  color: white;
+  padding: 15px;
+  border-right: 1px solid #e3b9f4;
+}
+
+.members-title {
+  color: #fff;
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dea9ee;
+}
+
+.members-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.member-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #edbef8;
+  color: #ddd;
+}
+
+/* Область чата */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #111;
+}
+
+#chat-log {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  background-color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#chat-log > * {
+  flex-shrink: 0;
+}
+
+#chat-log::after {
+  content: '';
+  flex: 1;
+  min-height: 20px;
+}
+
+/* Базовый стиль для всех сообщений */
+.message {
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  max-width: 70%;
+  word-wrap: break-word;
+  animation: fadeIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Сообщения от других пользователей (слева) */
+.message:not(.own-message) {
+  align-self: flex-start;
+  background-color: #222;
+  color: #eee;
+}
+
+/* Свои сообщения (справа) */
+.message.own-message {
+  align-self: flex-end;
+  background-color: #3a2b3c;
+  color: #fff;
+}
+
+.system-message {
+  color: #ffffff;
+  text-align: center;
+  margin: 10px 0;
+  font-size: 0.9em;
+}
+
+.message-time {
+  color: #908295;
+  font-size: 0.8em;
+  margin-right: 8px;
+}
+
+/* Область ввода */
+.input-area {
+  display: flex;
+  padding: 15px;
+  background-color: #222;
+  border-top: 1px solid #edbef8;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #977099;
+  background-color: #3a2b3c;
+  color: white;
+  border-radius: 4px 0 0 4px;
+  outline: none;
+}
+
+.send-button {
+  padding: 10px 20px;
+  background-color: #3a2b3c;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.send-button:hover {
+  background-color: #555;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #222;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
