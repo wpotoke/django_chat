@@ -60,7 +60,7 @@ class Event(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        self.description = f"{self.user} {self.type} the {self.group.name} group"
+        self.description = f"{self.user.username} {self.type} the {self.group.name} group"
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
