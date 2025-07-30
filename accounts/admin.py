@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import get_user_model
-from .forms import UserCreationForm  # Рекомендую добавить форму изменения
+from accounts.models import Profile
+from accounts.forms import UserCreationForm  # Рекомендую добавить форму изменения
 
 User = get_user_model()
 
@@ -53,3 +54,9 @@ class CustomUserAdmin(UserAdmin):
     list_per_page = 25  # Количество пользователей на странице
     list_max_show_all = 100  # Максимальное количество для "Show all"
     show_full_result_count = True  # Показывать полное количество
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "first_name", "last_name", "birthday", "slug")
+    list_display_links = ("user", "slug")
