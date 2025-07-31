@@ -11,32 +11,42 @@
     <div class="sidebar">
         <h3 class="members-title">Участники</h3>
         <ul id="members" class="members-list">
-            {% for member in group_members %}
-                <li id="members-{{ member.username }}" class="member-item">{{ member.username }}</li>
+            {% for profile_member in profile_members %}
+                <a href="{{ profile_member.get_absolute_url }}">
+                    <li id="members-{{ profile_member.slug }}" class="member-item">{{ profile_member.user.username }}</li>
+                </a>
             {% endfor %}
         </ul>
     </div>
     
     <div class="chat-area">
         <div id="chat-log">
-            {% for message_event in message_and_event_list %}
-                {% if message_event.author %}
-                    <div class="message">
-                        <span class="message-time">{{ message_event.timestamp|time:"H:i" }}</span>
-                        <span class="message-author">{{ message_event.author.username }}:</span>
-                        <span class="message-text">{{ message_event.content }}</span>
-                    </div>
-                {% else %}
-                    <div class="system-message">
-                        {{ message_event }}
-                    </div>
-                {% endif %}
-            {% endfor %}
+          {% for message_event in message_and_event_list %}
+            {% if message_event.author %}
+              <div class="message {% if message_event.author == request.user %}own-message{% endif %}">
+                <div class="message-user">
+                  <a href="{{ message_event.author.profile.get_absolute_url }}">
+                    <img src="{{ message_event.author.profile.avatar.url|default:'/static/images/default.png' }}" 
+                         class="message-avatar">
+                    <span class="message-author">{{ message_event.author.username }}</span>
+                  </a>
+                </div>
+                <div class="message-content">
+                  <div class="message-bubble">{{ message_event.content }}</div>
+                  <span class="message-time">{{ message_event.timestamp|time:"H:i" }}</span>
+                </div>
+              </div>
+            {% else %}
+              <div class="system-message">
+                {{ message_event }}
+              </div>
+            {% endif %}
+          {% endfor %}
         </div>
         
         <div class="input-area">
-            <input id="chat-message-input" type="text" class="message-input" placeholder="Напишите сообщение...">
-            <button id="chat-message-submit" class="send-button">Отправить</button>
+          <input id="chat-message-input" type="text" class="message-input" placeholder="Напишите сообщение...">
+          <button id="chat-message-submit" class="send-button">Отправить</button>
         </div>
     </div>
 </div>
