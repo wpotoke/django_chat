@@ -2,6 +2,7 @@ from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from chat.models import Group, Message, Event
+from accounts.models import Profile
 
 
 @login_required
@@ -24,21 +25,23 @@ def group_chat_view(request, uuid):
                                        Kindly use the join button"
         )
 
-    messages = group.message_set.all()
+    messages = group.message_set.select_related("author__profile").all()
     events = group.event_set.all()
+
     # События - это сообщения, которые указывают
     # Что пользователь присоединился к группе или покинул ее.
     # Они будут отправлены автоматически, когда пользователь присоединится к группе или покинет ее.
 
-    # Сортируем по метке времени так, чтобы они были перечислены по порядку
-    message_and_event_list = [*messages, *events]
-    sorted_message_event_list = sorted(message_and_event_list, key=lambda x: x.timestamp)
+    message_and_event_list = list(messages) + list(events)
+    message_and_event_list.sort(key=lambda x: x.timestamp)
 
     group_members = group.members.all()
+    profile_members = Profile.objects.filter(user__in=group_members)
 
     context = {
-        "message_and_event_list": sorted_message_event_list,
+        "message_and_event_list": message_and_event_list,
         "group_members": group_members,
+        "profile_members": profile_members,
     }
 
     return render(request, template_name="chat/groupchat.html", context=context)
