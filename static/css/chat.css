@@ -17,7 +17,7 @@ html, body {
   background-color: #111;
 }
 
-/* Сайдбар с участниками */
+/* Сайдбар с участниками (без изменений) */
 .sidebar {
   width: 250px;
   height: 100%;
@@ -47,7 +47,7 @@ html, body {
   color: #ddd;
 }
 
-/* Область чата */
+/* Область чата (изменена структура) */
 .chat-area {
   flex: 1;
   display: flex;
@@ -64,58 +64,122 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  gap: 15px;
 }
 
-#chat-log > * {
+/* Новые стили сообщений */
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 80%;
+  position: relative;
+}
+
+/* Контейнер аватарки и имени */
+.message-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 50px;
   flex-shrink: 0;
 }
 
-#chat-log::after {
-  content: '';
-  flex: 1;
-  min-height: 20px;
+.message-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #3a2b3c;
+  margin-bottom: 5px;
+  border: 1px solid #5a4a5c;
 }
 
-/* Базовый стиль для всех сообщений */
-.message {
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  border-radius: 4px;
-  max-width: 70%;
-  word-wrap: break-word;
-  animation: fadeIn 0.3s ease-out;
+.message-author {
+  color: #908295;
+  font-size: 0.75em;
+  text-align: center;
+  transition: color 0.2s;
+}
+
+/* Добавьте эти стили в ваш CSS */
+.profile-link {
+  text-decoration: none;
+  color: inherit;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
-/* Сообщения от других пользователей (слева) */
-.message:not(.own-message) {
-  align-self: flex-start;
+.profile-link:hover {
+  text-decoration: none;
+}
+
+.message-user a {
+  text-decoration: none;
+  color: #908295;
+}
+
+.message-user a:hover .message-author {
+  color: #c7a6d3;
+}
+
+.message-author:hover {
+  color: #c7a6d3;
+}
+
+/* Облачко сообщения */
+.message-content {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100% - 62px);
+}
+
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 18px;
+  position: relative;
+  word-wrap: break-word;
+  line-height: 1.4;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Сообщения других пользователей (слева) */
+.message:not(.own-message) .message-bubble {
   background-color: #222;
   color: #eee;
+  border-top-left-radius: 4px;
 }
 
 /* Свои сообщения (справа) */
 .message.own-message {
   align-self: flex-end;
-  background-color: #3a2b3c;
-  color: #fff;
+  flex-direction: row-reverse;
 }
 
+.message.own-message .message-bubble {
+  background-color: #3a2b3c;
+  color: #fff;
+  border-top-right-radius: 4px;
+}
+
+.message-time {
+  color: #908295;
+  font-size: 0.7em;
+  margin-top: 4px;
+  align-self: flex-end;
+}
+
+/* Системные сообщения (без изменений) */
 .system-message {
   color: #ffffff;
   text-align: center;
   margin: 10px 0;
   font-size: 0.9em;
+  width: 100%;
 }
 
-.message-time {
-  color: #908295;
-  font-size: 0.8em;
-  margin-right: 8px;
-}
-
-/* Область ввода */
+/* Область ввода (без изменений) */
 .input-area {
   display: flex;
   padding: 15px;
@@ -147,7 +211,7 @@ html, body {
   background-color: #555;
 }
 
-/* Скроллбар */
+/* Скроллбар (без изменений) */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -165,6 +229,7 @@ html, body {
   background: #555;
 }
 
+/* Анимация (без изменений) */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
