@@ -24,18 +24,57 @@ function createMessageElement(data) {
         element.textContent = `${data.username} ${action} чат`;
     } else {
         element.className = 'message';
-
+        
         if (data.is_own) {
-            element.classList.add("own-message");
+            element.classList.add('own-message');
         }
 
-        const time = new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const time = new Date(data.timestamp).toLocaleTimeString([], {
+            hour: '2-digit', 
+            minute: '2-digit'
+        });
 
-        element.innerHTML = `
-            <span class="message-time">${time}</span>
-            <span class="message-author">${data.username}:</span>
-            <span class="message-text">${data.message}</span>
-        `;
+        // Создаем элементы вручную вместо innerHTML
+        const messageUser = document.createElement('div');
+        messageUser.className = 'message-user';
+        
+        const profileLink = document.createElement('a');
+        profileLink.href = data.profile_url || '#';
+        profileLink.className = 'profile-link';
+        
+        const avatarImg = document.createElement('img');
+        avatarImg.src = data.avatar;
+        avatarImg.className = 'message-avatar';
+        avatarImg.alt = data.username;
+        avatarImg.onerror = function() {
+            this.src = '/static/images/default.png';
+        };
+        
+        const authorSpan = document.createElement('span');
+        authorSpan.className = 'message-author';
+        authorSpan.textContent = data.username;
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        
+        const messageBubble = document.createElement('div');
+        messageBubble.className = 'message-bubble';
+        messageBubble.textContent = data.message;
+        
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'message-time';
+        timeSpan.textContent = time;
+        
+        // Собираем структуру
+        profileLink.appendChild(avatarImg);
+        profileLink.appendChild(authorSpan);
+        messageUser.appendChild(profileLink);
+        
+        messageContent.appendChild(messageBubble);
+        messageContent.appendChild(timeSpan);
+        
+        element.appendChild(messageUser);
+        element.appendChild(messageContent);
     }
     
     return element;
