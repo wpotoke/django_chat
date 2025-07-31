@@ -7,6 +7,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import CreateView
 from django_channels_chat import settings
 from accounts.forms import UserCreationForm, UserLoginForm
+from accounts.models import Profile
 
 
 User = get_user_model()
@@ -26,6 +27,7 @@ class UserRegisterView(CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         user = form.instance
+        Profile.objects.create(user=user)
         login(self.request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
         return response
 
