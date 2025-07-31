@@ -12,3 +12,4 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 db.sqlite3
+replace-rules.txt
