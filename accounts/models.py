@@ -54,7 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Profile(models.Model):
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name="Пользователь")
+    user = models.OneToOneField(to=User, on_delete=models.CASCADE, related_name="profile", verbose_name="Пользователь")
     slug = models.SlugField(max_length=255, blank=True, verbose_name="URL", unique=True)
     first_name = models.CharField(max_length=200, verbose_name="Имя", default="John")
     last_name = models.CharField(max_length=255, verbose_name="Фамилия", default="Doe")
