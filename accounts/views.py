@@ -4,7 +4,7 @@ from django.contrib.auth import login
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView
 from django_channels_chat import settings
 from accounts.forms import UserCreationForm, UserLoginForm
 from accounts.models import Profile
@@ -49,3 +49,14 @@ class UserLoginView(LoginView):
             self.request.session.set_expiry(0)
             self.request.session.modified = True
         return super().form_valid(form)
+
+
+class ProfileDetailView(DetailView):
+    model = Profile
+    template_name = "accounts/profile_detail.html"
+    context_object_name = "profile"
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["title"] = f"Профиль : {self.object.user.username}"
+        return context
