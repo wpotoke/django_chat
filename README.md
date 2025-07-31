@@ -1,37 +1,16 @@
-<img width="1917" height="866" alt="image" src="https://github.com/user-attachments/assets/45c83f47-bcd0-4686-8dc9-3450acf9f985" />
-<img width="644" height="864" alt="image" src="https://github.com/user-attachments/assets/dece77a2-adc9-41ec-88f1-f5625fdb1151" />
+<img width="1919" height="871" alt="image" src="https://github.com/user-attachments/assets/1ba0d250-9c9a-4064-a923-855bc34055ce" />
+<img width="1918" height="863" alt="image" src="https://github.com/user-attachments/assets/e3c07653-f547-4591-854a-50c12ded551a" />
+<img width="1919" height="921" alt="image" src="https://github.com/user-attachments/assets/e23a092e-6b22-4c4c-afc7-b61772848daf" />
+<img width="1916" height="921" alt="image" src="https://github.com/user-attachments/assets/2cbf976f-5d04-4c03-9fb0-6989c16a91ca" />
 
 
+# Chat App (In Development)
 
+A simple chat application for messaging with friends.
 
-I've significantly improved the chat application's functionality, reliability, and user experience. Here's a concise overview of the key changes:
+### Current Features:
+- Group chats
+- Real-time messaging
+- User profiles
 
-Core Improvements:
-Complete UI Redesign
-   - Implemented dark theme with modern message bubbles
-   - Split layout (sidebar for members + main chat area)
-   - Distinct styling for system messages vs user messages
-
-Enhanced WebSocket Implementation
-   - Automatic reconnection logic
-   - Better error handling
-   - Separated message processing into dedicated functions
-
-New Features:
-   - Message timestamps
-   - Visual distinction for own messages
-   - Proper join/leave notifications
-   - Auto-scrolling to new messages
-
-Code Quality Upgrades:
-   - Better organized JavaScript (modular functions)
-   - Improved DOM handling
-   - More reliable member list updates
-   - Input validation and sanitization
-
-Removed Legacy Code:
-   - Old textarea-based display
-   - Basic WebSocket implementation
-   - Minimalist styling
-
-The chat now offers a more polished experience while being more stable and maintainable under the hood. The new structure also makes it easier to add future enhancements.
+More features coming soon!
