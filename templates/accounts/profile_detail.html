@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/profile_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-background"></div>
+            <div class="profile-avatar">
+                <img src="{{profile.avatar.url}}" alt="{{ profile }}">
+            </div>
+        </div>
+        <div class="profile-info">
+            <h1>{{profile.first_name}} {{profile.last_name}}</h1>
+            <p class="phone">
+                {% if profile.user.phone_number %}
+                    Телефон {{profile.user.phone_number}}
+                {% endif %}
+                    Телефон не указан</p>
+            <p class="username">username @{{profile.user.username}}</p>
+            <p class="bio">О себе {{profile.bio}}</p>
+            <div class="profile-field">
+                <label class="field-label">Дата рождения</label>
+                <div class="field-value">
+                    {% if profile.birthday %}
+                        <span class="birthday-badge">{{ profile.birthday|date:"d.m.Y" }}</span>
+                    {% else %}
+                        Не указана
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="profile-actions">
+            <button class="btn-edit">Редактировать</button>
+            <button class="btn-message">Написать</button>
+        </div>
+    </div>
+</body>
+{% endblock  %}
