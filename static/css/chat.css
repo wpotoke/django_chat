@@ -17,7 +17,7 @@ html, body {
   background-color: #111;
 }
 
-/* Сайдбар с участниками (без изменений) */
+/* Сайдбар с участниками */
 .sidebar {
   width: 250px;
   height: 100%;
@@ -47,7 +47,7 @@ html, body {
   color: #ddd;
 }
 
-/* Область чата (изменена структура) */
+/* Область чата */
 .chat-area {
   flex: 1;
   display: flex;
@@ -67,7 +67,7 @@ html, body {
   gap: 15px;
 }
 
-/* Новые стили сообщений */
+/* Стили сообщений */
 .message {
   display: flex;
   align-items: flex-start;
@@ -102,7 +102,6 @@ html, body {
   transition: color 0.2s;
 }
 
-/* Добавьте эти стили в ваш CSS */
 .profile-link {
   text-decoration: none;
   color: inherit;
@@ -170,7 +169,7 @@ html, body {
   align-self: flex-end;
 }
 
-/* Системные сообщения (без изменений) */
+/* Системные сообщения */
 .system-message {
   color: #ffffff;
   text-align: center;
@@ -179,39 +178,140 @@ html, body {
   width: 100%;
 }
 
-/* Область ввода (без изменений) */
+/* Область ввода */
 .input-area {
   display: flex;
+  flex-direction: column;
   padding: 15px;
   background-color: #222;
   border-top: 1px solid #edbef8;
+  gap: 8px;
+}
+
+/* Стили для ответов */
+#reply-info {
+  display: none;
+  background-color: #3a2b3c;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: -5px;
+}
+
+.reply-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #c7a6d3;
+  font-size: 0.9em;
+}
+
+
+.reply-preview {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  padding: 5px;
+  background-color: rgba(58, 43, 60, 0.2);
+  border-radius: 5px;
+}
+
+.reply-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+}
+
+.reply-to {
+  font-weight: bold;
+  color: #c7a6d3;
+  margin-right: 5px;
+}
+
+.reply-content {
+  color: #bbb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.message.own-message .reply-btn {
+  display: none !important;
+}
+
+
+.cancel-reply-btn {
+  background: none;
+  border: none;
+  color: #ddd;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.cancel-reply-btn:hover {
+  color: #fff;
+}
+
+.message-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.reply-btn {
+  background: none;
+  border: none;
+  color: #908295;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.reply-btn:hover {
+  opacity: 1;
+  color: #c7a6d3;
+}
+
+/* Поле ввода сообщения */
+.message-input-container {
+  display: flex;
+  border: 1px solid #977099;
+  border-radius: 4px;
 }
 
 .message-input {
   flex: 1;
-  padding: 10px;
-  border: 1px solid #977099;
-  background-color: #3a2b3c;
-  color: white;
-  border-radius: 4px 0 0 4px;
-  outline: none;
-}
-
-.send-button {
-  padding: 10px 20px;
+  padding: 10px 15px;
   background-color: #3a2b3c;
   color: white;
   border: none;
-  border-radius: 0 4px 4px 0;
+  outline: none;
+  border-radius: 4px 0 0 4px;
+}
+
+.send-button {
+  padding: 0 15px;
+  background-color: #3a2b3c;
+  color: white;
+  border: none;
+  border-left: 1px solid #977099;
   cursor: pointer;
   transition: background-color 0.3s;
+  border-radius: 0 4px 4px 0;
 }
 
 .send-button:hover {
-  background-color: #555;
+  background-color: #4a3b4c;
 }
 
-/* Скроллбар (без изменений) */
+/* Скроллбар */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -229,7 +329,7 @@ html, body {
   background: #555;
 }
 
-/* Анимация (без изменений) */
+/* Анимация */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
