@@ -2,81 +2,106 @@ let chatSocket = null;
 const chatLog = document.getElementById('chat-log');
 const messageInput = document.getElementById('chat-message-input');
 const submitButton = document.getElementById('chat-message-submit');
+const replyInfo = document.getElementById('reply-info');
+const replyUsername = document.getElementById('reply-username');
+const replyToId = document.getElementById('reply-to-id');
+const cancelReply = document.getElementById('cancel-reply');
 
+function initializeChat() {
+    scrollToBottom();
+    setupEventListeners();
+    connectWebSocket();
+}
 
 function scrollToBottom() {
-    const chatLog = document.getElementById('chat-log');
     chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-// Вызовите при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    scrollToBottom();
-});
+function setupEventListeners() {
+    // Обработка клика на кнопку ответа
+    chatLog.addEventListener('click', (e) => {
+        const replyBtn = e.target.closest('.reply-btn');
+        if (!replyBtn) return;
+        
+        const messageId = replyBtn.dataset.replyTo;
+        const username = replyBtn.dataset.username;
+        
+        if (!messageId) {
+            console.error('Reply button has no message ID');
+            return;
+        }
+        
+        replyToId.value = messageId;
+        replyUsername.textContent = username;
+        replyInfo.style.display = 'block';
+        messageInput.focus();
+    });
 
+    // Отмена ответа
+    cancelReply.addEventListener('click', () => {
+        replyToId.value = '';
+        replyInfo.style.display = 'none';
+    });
+
+    // Отправка по Enter
+    messageInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // Отправка по клику
+    submitButton.addEventListener('click', sendMessage);
+}
 
 function createMessageElement(data) {
     const element = document.createElement('div');
     
-    if (data.status === 'Join' || data.status === 'Left') {
+    if (data.status) {
         element.className = 'system-message';
         const action = data.status === 'Join' ? 'присоединился' : 'покинул';
         element.textContent = `${data.username} ${action} чат`;
-    } else {
-        element.className = 'message';
-        
-        if (data.is_own) {
-            element.classList.add('own-message');
-        }
-
-        const time = new Date(data.timestamp).toLocaleTimeString([], {
-            hour: '2-digit', 
-            minute: '2-digit'
-        });
-
-        // Создаем элементы вручную вместо innerHTML
-        const messageUser = document.createElement('div');
-        messageUser.className = 'message-user';
-        
-        const profileLink = document.createElement('a');
-        profileLink.href = data.profile_url || '#';
-        profileLink.className = 'profile-link';
-        
-        const avatarImg = document.createElement('img');
-        avatarImg.src = data.avatar;
-        avatarImg.className = 'message-avatar';
-        avatarImg.alt = data.username;
-        avatarImg.onerror = function() {
-            this.src = '/static/images/default.png';
-        };
-        
-        const authorSpan = document.createElement('span');
-        authorSpan.className = 'message-author';
-        authorSpan.textContent = data.username;
-        
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-        
-        const messageBubble = document.createElement('div');
-        messageBubble.className = 'message-bubble';
-        messageBubble.textContent = data.message;
-        
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'message-time';
-        timeSpan.textContent = time;
-        
-        // Собираем структуру
-        profileLink.appendChild(avatarImg);
-        profileLink.appendChild(authorSpan);
-        messageUser.appendChild(profileLink);
-        
-        messageContent.appendChild(messageBubble);
-        messageContent.appendChild(timeSpan);
-        
-        element.appendChild(messageUser);
-        element.appendChild(messageContent);
+        return element;
     }
-    
+
+    element.className = 'message';
+    if (data.is_own) element.classList.add('own-message');
+    element.dataset.messageId = data.id;
+
+    const time = new Date(data.timestamp).toLocaleTimeString([], {
+        hour: '2-digit', 
+        minute: '2-digit'
+    });
+
+    element.innerHTML = `
+        <div class="message-user">
+            <a href="${data.profile_url}" class="profile-link">
+                <img src="${data.avatar}" class="message-avatar" alt="${data.username}">
+                <span class="message-author">${data.username}</span>
+            </a>
+        </div>
+        <div class="message-content">
+            ${data.reply_to ? `
+            <div class="reply-preview">
+                <img src="${data.reply_to.avatar}" class="reply-avatar">
+                <span class="reply-to">Ответ ${data.reply_to.username}:</span>
+                <div class="reply-content">${data.reply_to.content}</div>
+            </div>
+            ` : ''}
+            <div class="message-bubble">${data.content}</div>
+            <div class="message-footer">
+                <span class="message-time">${time}</span>
+                ${!data.is_own ? `
+                <button class="reply-btn" 
+                        data-reply-to="${data.id}" 
+                        data-username="${data.username}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
     return element;
 }
 
@@ -85,76 +110,62 @@ function connectWebSocket() {
         chatSocket.onclose = null;
         chatSocket.close();
     }
-    
-    chatSocket = new WebSocket(`ws://${window.location.host}${window.location.pathname}`);
-    
-    chatSocket.onopen = function(e) {
-        console.log("WebSocket connected");
-    };
 
-    chatSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        const messageElement = createMessageElement(data);
-        chatLog.appendChild(messageElement);
-        scrollToBottom();
-        
-        if (data.status === 'Join') {
-            handleUserJoin(data.username);
-        } else if (data.status === 'Left') {
-            handleUserLeave(data.username);
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    chatSocket = new WebSocket(`${protocol}${window.location.host}${window.location.pathname}`);
+    
+    chatSocket.onopen = () => console.log("WebSocket connected");
+
+    chatSocket.onmessage = (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            const messageElement = createMessageElement(data);
+            
+            // Плавное добавление нового сообщения
+            messageElement.style.opacity = '0';
+            chatLog.appendChild(messageElement);
+            setTimeout(() => {
+                messageElement.style.transition = 'opacity 0.3s ease';
+                messageElement.style.opacity = '1';
+            }, 10);
+            
+            scrollToBottom();
+        } catch (error) {
+            console.error('Error processing message:', error);
         }
     };
 
-    chatSocket.onclose = function(e) {
+    chatSocket.onclose = () => {
         console.log("WebSocket disconnected. Reconnecting...");
         setTimeout(connectWebSocket, 2000);
     };
 
-    chatSocket.onerror = function(error) {
+    chatSocket.onerror = (error) => {
         console.error("WebSocket error:", error);
     };
 }
 
-function handleUserJoin(user) {
-    const membersList = document.getElementById('members');
-    if (!membersList) return;
-    
-    const memberItem = document.createElement('li');
-    memberItem.textContent = user;
-    memberItem.id = `members-${user}`;
-    membersList.appendChild(memberItem);
-}
-
-function handleUserLeave(user) {
-    const element = document.getElementById(`members-${user}`);
-    if (element) element.remove();
-}
-
-function scrollToBottom() {
-    chatLog.scrollTop = chatLog.scrollHeight;
-}
-
-messageInput.focus();
-messageInput.addEventListener('keyup', function(e) {
-    if (e.key === 'Enter') sendMessage();
-});
-
-submitButton.addEventListener('click', sendMessage);
-
 function sendMessage() {
     const message = messageInput.value.trim();
-    if (!message) return;
+    if (!message || !chatSocket) return;
+    
+    const messageData = {
+        type: "text_message",
+        message: message,
+        reply_to: replyToId.value || null
+    };
     
     if (chatSocket.readyState === WebSocket.OPEN) {
-        chatSocket.send(JSON.stringify({
-            type: "text_message",
-            message: message
-        }));
+        chatSocket.send(JSON.stringify(messageData));
         messageInput.value = '';
+        if (replyToId.value) {
+            replyToId.value = '';
+            replyInfo.style.display = 'none';
+        }
+        messageInput.focus();
     } else {
         console.error("Cannot send message - WebSocket not connected");
     }
 }
 
-// Инициализация
-connectWebSocket();
+document.addEventListener('DOMContentLoaded', initializeChat);
