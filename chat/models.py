@@ -39,6 +39,14 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    reply_to = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="replies",
+        verbose_name="Ответ на сообщение",
+    )
 
     def __str__(self) -> str:
         # pylint: disable=no-member
