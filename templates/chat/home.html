@@ -1,30 +1,72 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Home{% endblock title %}
+
+{% block title %}
+    Home
+{% endblock title %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static "css/home.css" %}">
+{% endblock  %}
+
+{% block fonts %}
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+{% endblock  %}
 
 {% block content %}
-    <h1 style="margin-top: 3px;">My Django Chat Home Page</h1>
-    <ul>
-        {% for group in groups %}
-            <div id="{{ group.uuid }}">
-                <li><a>{{ group.name }}</a></li>
-                {% if request.user in group.members.all %}
-                    <button id="leave-{{ group.uuid }}" class="group_option" value="leave_group {{ group.uuid }}">
-                        Leave
-                    </button>
-                    <button id="open-{{ group.uuid }}" class="group_option" value="open_group {{ group.uuid }}">Open
-                    </button>
-                {% else %}
-                    <button id="join-{{ group.uuid }}" class="group_option" value="join_group {{ group.uuid }}">
-                        Join
-                    </button>
-                {% endif %}
+    <div class="container">
+        <header class="header">
+            <div class="logo">Xam</div>
+            <nav class="nav">
+                <a href="#" class="nav-link active">Главная</a>
+                <a href="{% url 'chat_list' %}" class="nav-link">Чаты</a>
+                <a href="#" class="nav-link">Настройки</a>
+            </nav>
+            <div class="user-menu">
+                <a href="{{user.profile.get_absolute_url}}">
+                    <img src="{{user.profile.avatar.url|default:'/static/images/default.png'}}" class="avatar">
+                </a>
             </div>
-        {% endfor %}
+        </header>
 
-    </ul>
+        <main class="main-content">
+            <section class="hero">
+                <h1 class="hero-title">Добро пожаловать в Xam</h1>
+                <p class="hero-subtitle">Темно-фиолетовый чат для комфортного общения</p>
+                <div class="cta-buttons">
+                    <a href="#" class="btn primary">Начать чат</a>
+                    <a href="#" class="btn secondary">Узнать больше</a>
+                </div>
+            </section>
+
+            <section class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Групповые чаты</h3>
+                    <p>Создавайте тематические комнаты для общения</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Приватность</h3>
+                    <p>Ваши сообщения защищены</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Темы</h3>
+                    <p>Настройте внешний вид под себя</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#">Правила</a>
+                    <a href="#">Поддержка</a>
+                    <a href="#">Контакты</a>
+                </div>
+                <div class="footer-copy">© 2025 Xam Chat</div>
+            </div>
+        </footer>
+    </div>
 {% endblock content %}
-
-{% block script %}
-    <script src="{% static 'js/join_and_leave_event.js' %}"></script>
-{% endblock %}
