@@ -13,7 +13,8 @@ disable =
     unused-argument,
     too-few-public-methods,
     too-many-arguments,
-    too-many-locals
+    too-many-locals,
+    too-many-positional-arguments
 
 [FORMAT]
 max-line-length=120
