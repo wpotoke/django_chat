@@ -1,7 +1,9 @@
+# pylint: disable=no-name-in-module
 from django.urls import path
-from . import consumers
+from chat.consumers import GroupConsumer, JoinAndLeave, PrivateChatConsumer
 
 websocket_urlpatterns = [
-    path("", consumers.JoinAndLeave.as_asgi()),
-    path("groups/<uuid:uuid>/", consumers.GroupConsumer.as_asgi()),
+    path("", JoinAndLeave.as_asgi()),
+    path("groups/<uuid:uuid>/", GroupConsumer.as_asgi()),
+    path("chats/<uuid:uuid>/", PrivateChatConsumer.as_asgi()),
 ]
