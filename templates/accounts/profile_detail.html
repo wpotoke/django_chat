@@ -34,8 +34,11 @@
             </div>
         </div>
         <div class="profile-actions">
-            <button class="btn-edit">Редактировать</button>
-            <button class="btn-message">Написать</button>
+            {% if user.profile.slug != profile.slug %}
+                <button class="btn-message">Написать</button>
+            {% else %}
+                <button class="btn-edit">Редактировать</button>
+            {% endif %}
         </div>
     </div>
 </body>
