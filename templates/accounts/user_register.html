@@ -1,8 +1,24 @@
-{% extends 'base.html' %} {% load static %} {% block css %}
+{% extends 'base.html' %} 
+{% load static %}
+
+{% block css %}
   <link rel="stylesheet" href="{% static 'css/user_register.css' %}" />
-{% endblock %} {% block title %}
+{% endblock %}
+
+{% block title %}
   Register
-{% endblock %} {% block content %}
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-header">
+    <h1 class="auth-title">Добро пожаловать в Xam</h1>
+    <p class="auth-subtitle">
+      Для доступа к чату и всем его возможностям требуется авторизация. 
+      Пожалуйста, войдите в свой аккаунт или зарегистрируйтесь, 
+      чтобы присоединиться к нашему сообществу.
+    </p>
+  </div>
   <form class="form" method="post" action="{% url 'user_register' %}">
     {% csrf_token %}
 
