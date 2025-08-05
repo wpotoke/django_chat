@@ -1,10 +1,15 @@
 from django.contrib import admin
-from chat.models import Group, Message, Event
+from chat.models import PrivateChat, Group, Message, Event
 
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ["uuid", "name"]
+
+
+@admin.register(PrivateChat)
+class PrivateChatAdmin(admin.ModelAdmin):
+    list_display = ["uuid"]
 
 
 @admin.register(Message)
