@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/chat_list.css' %}">
+<style>
+    #join-{{ group.uuid }} {
+        background-color: var(--accent-purple);
+        color: white;
+    }
+    
+    #join-{{ group.uuid }}:hover {
+        background-color: var(--light-purple);
+    }
+    
+    #leave-{{ group.uuid }} {
+        background-color: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--text-muted);
+    }
+    
+    #leave-{{ group.uuid }}:hover {
+        background-color: rgba(255, 0, 0, 0.1);
+        color: #ff6b6b;
+        border-color: #ff6b6b;
+    }
+    
+    #open-{{ group.uuid }} {
+        background-color: var(--medium-purple);
+        color: white;
+    }
+    
+    #open-{{ group.uuid }}:hover {
+        background-color: var(--light-purple);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Chat Groups</h1>
+    
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="Search groups..." id="group-search">
+    </div>
+    
+    <ul class="groups-list">
+        {% for group in groups %}
+            <li class="group-item" id="{{ group.uuid }}">
+                <div class="group-icon-container">
+                    <img src="{{ group.icon.url }}" class="group-icon" alt="{{ group.name }}">
+                    <!-- <div class="online-status"></div> --> <!-- Раскомментируйте если нужен индикатор онлайн -->
+                </div>
+                
+                <div class="group-info">
+                    <h3 class="group-name">{{ group.name }}</h3>
+                    <p class="group-members">{{ group.members.count }} members</p>
+                </div>
+                
+                <div class="group-actions">
+                    {% if request.user in group.members.all %}
+                        <button id="leave-{{ group.uuid }}" class="group_option" value="leave_group {{ group.uuid }}">
+                            Leave
+                        </button>
+                        <button id="open-{{ group.uuid }}" class="group_option" value="open_group {{ group.uuid }}">
+                            Open
+                        </button>
+                    {% else %}
+                        <button id="join-{{ group.uuid }}" class="group_option" value="join_group {{ group.uuid }}">
+                            Join
+                        </button>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/join_and_leave_event.js' %}"></script>
+{% endblock %}
