@@ -1,5 +1,8 @@
-# pylint: disable=broad-exception-caught, import-outside-toplevel
+# pylint: disable=broad-exception-caught,no-member,attribute-defined-outside-init
 import json
+import traceback
+from typing import Any, Dict
+
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.core.exceptions import ObjectDoesNotExist
@@ -8,283 +11,226 @@ from .models import Event, Message, Group, PrivateChat
 
 
 class UserDataMixin:
-    @database_sync_to_async
-    def get_profile_url(self, user):
-        if hasattr(user, "profile"):
-            return user.profile.get_absolute_url()
-        return "#"
+    """Миксин для работы с пользовательскими данными"""
 
     @database_sync_to_async
-    def get_user_avatar(self, user):
+    def get_profile_url(self, user: User) -> str:
+        return user.profile.get_absolute_url() if hasattr(user, "profile") else "#"
+
+    @database_sync_to_async
+    def get_user_avatar(self, user: User) -> str:
         if hasattr(user, "profile") and user.profile.avatar:
             return user.profile.avatar.url
         return "/static/images/avatars/default.png"
 
+
+class ChatOperationsMixin:
+    """Миксин для операций с чатами"""
+
     @database_sync_to_async
-    def get_chat(self, model, uuid):
+    def get_chat(self, model: Any, uuid: str) -> Any:
         return model.objects.get(uuid=uuid)
 
     @database_sync_to_async
-    def create_message(self, type_chat_name, type_chat, user, content, reply_to=None):
-        if type_chat_name == "group_chat":
-            return Message.objects.create(author=user, content=content, group=type_chat, reply_to=reply_to)
-        if type_chat_name == "private_chat":
-            return Message.objects.create(author=user, content=content, private_chat=type_chat, reply_to=reply_to)
-        return None
+    def create_message(self, chat_type: str, chat_obj: Any, user: User, content: str, reply_to: Any = None) -> Message:
+        message_data = {"author": user, "content": content, "reply_to": reply_to, chat_type: chat_obj}
+        return Message.objects.create(**message_data)
 
     @database_sync_to_async
-    def get_replied_message(self, type_chat_name, type_chat, message_id):
+    def get_replied_message(self, chat_type: str, chat_obj: Any, message_id: int) -> Message:
         try:
-            if type_chat_name == "group_chat":
-                return Message.objects.select_related("author").get(id=message_id, group=type_chat)
-            if type_chat_name == "private_chat":
-                return Message.objects.select_related("author").get(id=message_id, private_chat=type_chat)
-            return None
+            return Message.objects.select_related("author").get(id=message_id, **{chat_type: chat_obj})
         except (ObjectDoesNotExist, ValueError, TypeError):
             return None
 
 
+class BaseChatConsumer(UserDataMixin, ChatOperationsMixin):
+    """Базовый класс для чатов с общими методами"""
+
+    async def handle_connect(self: AsyncWebsocketConsumer, model: Any, chat_attr: str) -> None:
+        """Обработка подключения к чату"""
+        try:
+            self.user = self.scope["user"]
+            uuid = str(self.scope["url_route"]["kwargs"]["uuid"])
+            setattr(self, f"{chat_attr}_uuid", uuid)
+
+            chat = await self.get_chat(model, uuid)
+            setattr(self, chat_attr, chat)
+
+            if hasattr(self, "validate_connection"):
+                if not await self.validate_connection():
+                    await self.close()
+                    return
+
+            await self.channel_layer.group_add(uuid, self.channel_name)
+            await self.accept()
+        except Exception as e:
+            print(f"Connection error: {str(e)}")
+            traceback.print_exc()
+            await self.close()
+
+    async def handle_receive(
+        self: AsyncWebsocketConsumer, chat_type: str, chat_attr: str, text_data: str = None
+    ) -> None:
+        """Обработка входящих сообщений"""
+        try:
+            data = json.loads(text_data)
+            if data.get("type") != "text_message":
+                return
+
+            reply_to_id = data.get("reply_to")
+            replied_message = None
+
+            if reply_to_id:
+                replied_message = await self.get_replied_message(
+                    chat_type=chat_type, chat_obj=getattr(self, chat_attr), message_id=reply_to_id
+                )
+                if not replied_message:
+                    print(f"Replied message {reply_to_id} not found")
+
+            message = await self.create_message(
+                chat_type=chat_type,
+                chat_obj=getattr(self, chat_attr),
+                user=self.user,
+                content=data.get("message"),
+                reply_to=replied_message,
+            )
+
+            message_data = await self.prepare_message_data(message, replied_message)
+            await self.channel_layer.group_send(getattr(self, f"{chat_attr}_uuid"), message_data)
+
+        except Exception as e:
+            print(f"Error in receive: {str(e)}")
+            traceback.print_exc()
+
+    async def prepare_message_data(self, message: Message, replied_message: Message = None) -> Dict[str, Any]:
+        """Подготовка данных сообщения для отправки"""
+        avatar_url = await self.get_user_avatar(self.user)
+        profile_url = await self.get_profile_url(self.user)
+
+        message_data = {
+            "id": message.id,
+            "content": message.content,
+            "username": self.user.username,
+            "avatar": avatar_url,
+            "timestamp": str(message.timestamp),
+            "profile_url": profile_url,
+            "is_own": True,
+        }
+
+        if replied_message:
+            replied_avatar = await self.get_user_avatar(replied_message.author)
+            replied_profile_url = await self.get_profile_url(replied_message.author)
+            message_data["reply_to"] = {
+                "id": replied_message.id,
+                "username": replied_message.author.username,
+                "content": replied_message.content,
+                "avatar": replied_avatar,
+                "profile_url": replied_profile_url,
+            }
+
+        return message_data
+
+    async def send_message_response(self, event: Dict[str, Any]) -> None:
+        """Отправка сообщения клиенту"""
+        try:
+            response_data = {k: v for k, v in event.items() if k not in ["type", "sender_id"]}
+            response_data["is_own"] = self.user.username == event["username"]
+
+            if event.get("reply_to"):
+                response_data["reply_to"] = event["reply_to"]
+
+            await self.send(text_data=json.dumps(response_data))
+        except Exception as e:
+            print(f"Error sending message: {str(e)}")
+
+
 class JoinAndLeave(WebsocketConsumer):
+    """Обработчик подключения/отключения от групп"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = None
 
-    def connect(self):
+    def connect(self) -> None:
         self.user = self.scope["user"]
         self.accept()
 
-    def receive(self, text_data=None, bytes_data=None):
-        text_data = json.loads(text_data)
-        type_event = text_data.get("type", None)
-        data = text_data.get("data", None)
+    def receive(self, text_data: str = None, bytes_data: bytes = None) -> None:
+        try:
+            data = json.loads(text_data)
+            handler = getattr(self, data.get("type", ""), None)
+            if handler and callable(handler):
+                handler(data.get("data"))
+        except json.JSONDecodeError:
+            print("Invalid JSON data received")
 
-        if type_event == "leave_group":
-            self.leave_group(data)
-        elif type_event == "join_group":
-            self.join_group(data)
-
-    def leave_group(self, group_uuid):
+    def leave_group(self, group_uuid: str) -> None:
         group = Group.objects.get(uuid=group_uuid)
         group.remove_user_from_group(self.user)
-        data = {"type": "leave_group", "data": group_uuid}
-        self.send(json.dumps(data))
+        self._send_response("leave_group", group_uuid)
 
-    def join_group(self, group_uuid):
+    def join_group(self, group_uuid: str) -> None:
         group = Group.objects.get(uuid=group_uuid)
         group.add_user_to_group(self.user)
-        data = {"type": "join_group", "data": group_uuid}
-        self.send(json.dumps(data))
+        self._send_response("join_group", group_uuid)
+
+    def _send_response(self, response_type: str, data: Any) -> None:
+        self.send(json.dumps({"type": response_type, "data": data}))
 
 
-class BaseChatConsumer(UserDataMixin):
-    ...
+class GroupConsumer(BaseChatConsumer, AsyncWebsocketConsumer):
+    """Consumer для группового чата"""
 
-
-class GroupConsumer(UserDataMixin, AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.group_uuid = None
         self.group = None
         self.user = None
 
-    async def connect(self):
-        self.group_uuid = str(self.scope["url_route"]["kwargs"]["uuid"])
-        self.user = self.scope["user"]
-        try:
-            self.group = await super().get_chat(Group, self.group_uuid)
-            await self.channel_layer.group_add(self.group_uuid, self.channel_name)
-            await self.accept()
-        except Exception as e:
-            print(f"Connection error: {str(e)}")
-            await self.close()
+    async def connect(self) -> None:
+        await self.handle_connect(model=Group, chat_attr="group")
 
-    async def receive(self, text_data=None, bytes_data=None):
-        try:
-            data = json.loads(text_data)
-            if data.get("type") != "text_message":
-                return
+    async def receive(self, text_data: str = None, bytes_data: bytes = None) -> None:
+        await self.handle_receive("group", "group", text_data=text_data)
 
-            reply_to_id = data.get("reply_to")
-            replied_message = None
-
-            if reply_to_id:
-                replied_message = await super().get_replied_message(
-                    type_chat_name="group_chat", type_chat=self.group, message_id=reply_to_id
-                )
-                if not replied_message:
-                    print(f"Replied message {reply_to_id} not found")
-
-            message = await super().create_message(
-                type_chat_name="group_chat",
-                type_chat=self.group,
-                user=self.user,
-                content=data.get("message"),
-                reply_to=replied_message,
-            )
-
-            message_data = await self.prepare_message_data(message, replied_message)
-            await self.channel_layer.group_send(self.group_uuid, message_data)
-
-        except Exception as e:
-            print(f"Error in receive: {str(e)}")
-            import traceback
-
-            traceback.print_exc()
-
-    async def prepare_message_data(self, message, replied_message):
-        avatar_url = await super().get_user_avatar(self.user)
-        profile_url = await super().get_profile_url(self.user)
-
-        message_data = {
-            "type": "chat_message",
-            "id": message.id,
-            "content": message.content,
-            "username": self.user.username,
-            "avatar": avatar_url,
-            "timestamp": str(message.timestamp),
-            "profile_url": profile_url,
-            "is_own": True,
-        }
-
-        if replied_message:
-            replied_avatar = await super().get_user_avatar(replied_message.author)
-            replied_profile_url = await super().get_profile_url(replied_message.author)
-            message_data["reply_to"] = {
-                "id": replied_message.id,
-                "username": replied_message.author.username,
-                "content": replied_message.content,
-                "avatar": replied_avatar,
-                "profile_url": replied_profile_url,
-            }
-
+    async def prepare_message_data(self, message: Message, replied_message: Message = None) -> Dict[str, Any]:
+        message_data = await super().prepare_message_data(message, replied_message)
+        message_data["type"] = "chat_message"
         return message_data
 
-    async def chat_message(self, event):
-        try:
-            response_data = {
-                "id": event["id"],
-                "content": event["content"],
-                "username": event["username"],
-                "timestamp": event["timestamp"],
-                "avatar": event["avatar"],
-                "profile_url": event["profile_url"],
-                "is_own": self.user.username == event["username"],
-            }
-
-            if event.get("reply_to"):
-                response_data["reply_to"] = event["reply_to"]
-
-            await self.send(text_data=json.dumps(response_data))
-        except Exception as e:
-            print(f"Error in chat_message: {str(e)}")
+    async def chat_message(self, event: Dict[str, Any]) -> None:
+        await self.send_message_response(event)
 
 
-class PrivateChatConsumer(UserDataMixin, AsyncWebsocketConsumer):
+class PrivateChatConsumer(BaseChatConsumer, AsyncWebsocketConsumer):
+    """Consumer для приватного чата"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.private_chat_uuid = None
-        self.private_chat = None
-        self.user = None
         self.other_user = None
 
-    async def connect(self):
-        self.private_chat_uuid = str(self.scope["url_route"]["kwargs"]["uuid"])
-        self.user = self.scope["user"]
-        try:
-            self.private_chat = await super().get_chat(PrivateChat, self.private_chat_uuid)
-            if not await self.is_user_in_chat():
-                await self.close()
-                return None
+    async def connect(self) -> None:
+        await self.handle_connect(model=PrivateChat, chat_attr="private_chat")
 
-            self.other_user = await self.get_other_user()
-            await self.channel_layer.group_add(self.private_chat_uuid, self.channel_name)
-            await self.accept()
-
-        except Exception as e:
-            print(f"Connection error: {str(e)}")
-            await self.close()
+    async def validate_connection(self) -> bool:
+        return await self.is_user_in_chat()
 
     @database_sync_to_async
-    def is_user_in_chat(self):
-        return self.private_chat.participants.exclude(id=self.user.id).exists()
+    def is_user_in_chat(self) -> bool:
+        return self.private_chat.participants.filter(id=self.user.id).exists()
 
     @database_sync_to_async
-    def get_other_user(self):
+    def get_other_user(self) -> User:
         return self.private_chat.participants.exclude(id=self.user.id).first()
 
-    async def receive(self, text_data=None, bytes_data=None):
-        try:
-            data = json.loads(text_data)
-            if data.get("type") != "text_message":
-                return
+    async def receive(self, text_data: str = None, bytes_data: bytes = None) -> None:
+        await self.handle_receive("private_chat", "private_chat", text_data=text_data)
 
-            reply_to_id = data.get("reply_to")
-            replied_message = None
-            if reply_to_id:
-                replied_message = await super().get_replied_message(
-                    type_chat_name="private_chat", type_chat=self.private_chat, message_id=reply_to_id
-                )
-
-            message = await super().create_message(
-                type_chat_name="private_chat",
-                type_chat=self.private_chat,
-                user=self.user,
-                content=data.get("message"),
-                reply_to=replied_message,
-            )
-
-            message_data = await self.prepare_message_data(message, replied_message)
-            await self.channel_layer.group_send(self.private_chat_uuid, message_data)
-
-        except Exception as e:
-            print(f"Error in receive: {str(e)}")
-            import traceback
-
-            traceback.print_exc()
-
-    async def prepare_message_data(self, message, replied_message=None):
-        avatar_url = await super().get_user_avatar(self.user)
-        profile_url = await super().get_profile_url(self.user)
-
-        message_data = {
-            "type": "private_message",
-            "id": message.id,
-            "content": message.content,
-            "username": self.user.username,
-            "avatar": avatar_url,
-            "timestamp": str(message.timestamp),
-            "profile_url": profile_url,
-            "is_own": True,
-        }
-
-        if replied_message:
-            replied_avatar = await super().get_user_avatar(replied_message.author)
-            replied_profile_url = await super().get_profile_url(replied_message.author)
-            message_data["reply_to"] = {
-                "id": replied_message.id,
-                "username": replied_message.author.username,
-                "content": replied_message.content,
-                "avatar": replied_avatar,
-                "profile_url": replied_profile_url,
-            }
-
+    async def prepare_message_data(self, message: Message, replied_message: Message = None) -> Dict[str, Any]:
+        message_data = await super().prepare_message_data(message, replied_message)
+        message_data["type"] = "private_message"
         return message_data
 
-    async def private_message(self, event):
-        try:
-            response_data = {
-                "id": event["id"],
-                "content": event["content"],
-                "username": event["username"],
-                "timestamp": event["timestamp"],
-                "avatar": event["avatar"],
-                "profile_url": event["profile_url"],
-                "is_own": self.user.username == event["username"],
-            }
-
-            if event.get("reply_to"):
-                response_data["reply_to"] = event["reply_to"]
-
-            await self.send(text_data=json.dumps(response_data))
-        except Exception as e:
-            print(f"Error in chat_message: {str(e)}")
+    async def private_message(self, event: Dict[str, Any]) -> None:
+        await self.send_message_response(event)
