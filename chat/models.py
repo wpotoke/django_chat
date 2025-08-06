@@ -1,10 +1,10 @@
-from datetime import datetime
 from uuid import uuid4
 from django.db import models
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth import get_user_model
-
 from django.urls import reverse
+from chat.manager import PrivateChatManager
+
 
 User = get_user_model()
 
@@ -13,13 +13,7 @@ class PrivateChat(models.Model):
     uuid = models.UUIDField(default=uuid4, editable=False)
     participants = models.ManyToManyField(User)
     created = models.DateTimeField(auto_now_add=True)
-    icon = models.ImageField(
-        verbose_name="Иконка чата",
-        upload_to="images/icons_chat/%Y/%m/%d",
-        default="images/icons_chat/default.png",
-        blank=True,
-        validators=[FileExtensionValidator(allowed_extensions=("png", "jpg", "jpeg"))],
-    )
+    objects = PrivateChatManager()
 
     def __str__(self) -> str:
         return f"Chat {self.uuid}"
@@ -69,7 +63,7 @@ class Message(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, null=True, blank=True, on_delete=models.CASCADE)
     private_chat = models.ForeignKey(PrivateChat, on_delete=models.CASCADE, blank=True, null=True)
     reply_to = models.ForeignKey(
         "self",
