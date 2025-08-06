@@ -11,7 +11,7 @@ User = get_user_model()
 
 class PrivateChat(models.Model):
     uuid = models.UUIDField(default=uuid4, editable=False)
-    participants = models.ManyToManyField(User, limit_choices_to=2)
+    participants = models.ManyToManyField(User)
     created = models.DateTimeField(auto_now_add=True)
     icon = models.ImageField(
         verbose_name="Иконка чата",
