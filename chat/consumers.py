@@ -33,7 +33,19 @@ class ChatOperationsMixin:
 
     @database_sync_to_async
     def create_message(self, chat_type: str, chat_obj: Any, user: User, content: str, reply_to: Any = None) -> Message:
-        message_data = {"author": user, "content": content, "reply_to": reply_to, chat_type: chat_obj}
+        message_data = {
+            "author": user,
+            "content": content,
+            "reply_to": reply_to,
+        }
+
+        # Устанавливаем правильное поле в зависимости от типа чата
+        if chat_type == "group":
+            message_data["group"] = chat_obj
+        else:
+            message_data["private_chat"] = chat_obj
+        print(message_data, "_____________________________________")
+
         return Message.objects.create(**message_data)
 
     @database_sync_to_async
@@ -77,6 +89,9 @@ class BaseChatConsumer(UserDataMixin, ChatOperationsMixin):
             data = json.loads(text_data)
             if data.get("type") != "text_message":
                 return
+
+            if chat_type not in ["group", "private_chat"]:
+                raise ValueError(f"Invalid chat type: {chat_type}")
 
             reply_to_id = data.get("reply_to")
             replied_message = None
