@@ -8,6 +8,7 @@ from django.views.generic import CreateView, DetailView
 from django_channels_chat import settings
 from accounts.forms import UserCreationForm, UserLoginForm
 from accounts.models import Profile
+from chat.models import PrivateChat
 
 
 User = get_user_model()
@@ -56,7 +57,15 @@ class ProfileDetailView(DetailView):
     template_name = "accounts/profile_detail.html"
     context_object_name = "profile"
 
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
+    def get_context_data(self, **kwargs):
+        # pylint: disable=unused-variable
         context = super().get_context_data(**kwargs)
-        context["title"] = f"Профиль : {self.object.user.username}"
+        profile = self.object
+        current_user = self.request.user
+
+        # Получаем или создаем приватный чат
+        chat, created = PrivateChat.objects.get_or_create_chat(current_user, profile.user)
+
+        context["title"] = f"Профиль: {profile.user.username}"
+        context["private_chat_uuid"] = chat.uuid
         return context
