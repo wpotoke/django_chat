@@ -1,60 +1,165 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-    Home
-{% endblock title %}
+{% block title %}Home{% endblock title %}
 
 {% block css %}
     <link rel="stylesheet" href="{% static "css/home.css" %}">
-{% endblock  %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
 
 {% block fonts %}
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-{% endblock  %}
+{% endblock %}
 
 {% block content %}
     <div class="container">
         <header class="header">
-            <div class="logo">Xam</div>
+            <div class="logo animate-logo">Xam</div>
             <nav class="nav">
                 <a href="#" class="nav-link active">Главная</a>
                 <a href="{% url 'chat_list' %}" class="nav-link">Чаты</a>
                 <a href="#" class="nav-link">Настройки</a>
             </nav>
             <div class="user-menu">
-                <a href="{{user.profile.get_absolute_url}}">
-                    <img src="{{user.profile.avatar.url|default:'/static/images/default.png'}}" class="avatar">
-                </a>
+                {% if user.is_authenticated %}
+                    <a href="{{user.profile.get_absolute_url}}">
+                        <img src="{{user.profile.avatar.url|default:'/static/images/default.png'}}" class="avatar">
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn secondary small">Войти</a>
+                {% endif %}
             </div>
         </header>
 
         <main class="main-content">
             <section class="hero">
-                <h1 class="hero-title">Добро пожаловать в Xam</h1>
-                <p class="hero-subtitle">Темно-фиолетовый чат для комфортного общения</p>
+                <h1 class="hero-title gradient-text">Добро пожаловать в Xam</h1>
+                <p class="hero-subtitle">Всем привет, я разрабатываю свой чат, сейчас в нем вы можете пообщаться с друзьями</p>
                 <div class="cta-buttons">
-                    <a href="#" class="btn primary">Начать чат</a>
-                    <a href="#" class="btn secondary">Узнать больше</a>
+                    <a href="{% url 'chat_list' %}" class="btn primary">Начать чат</a>
+                    <a href="#features" class="btn secondary">Возможности</a>
+                </div>
+                
+                <div class="server-status">
+                    <span class="status-indicator online"></span>
+                    <span>Сервер активен</span>
                 </div>
             </section>
 
-            <section class="features">
-                <div class="feature-card">
-                    <div class="feature-icon">💬</div>
-                    <h3>Групповые чаты</h3>
-                    <p>Создавайте тематические комнаты для общения</p>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="user-count">0</div>
+                    <div class="stat-label">Пользователей онлайн</div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Приватность</h3>
-                    <p>Ваши сообщения защищены</p>
+                <div class="stat-item">
+                    <div class="stat-number" id="message-count">0</div>
+                    <div class="stat-label">Сообщений сегодня</div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <h3>Темы</h3>
-                    <p>Настройте внешний вид под себя</p>
+            </div>
+
+            <section class="features" id="features">
+                <div class="feature-card-wrapper">
+                    <a href="{% url 'chat_list' %}" class="feature-link">
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-user-friends"></i></div>
+                            <h3>Групповые чаты</h3>
+                            <p>Создавайте тематические комнаты для общения с друзьями и коллегами</p>
+                        </div>
+                    </a>
                 </div>
+                
+                <div class="feature-card-wrapper">
+                    <a href="{% url 'chat_list' %}" class="feature-link">
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-comment-dots"></i></div>
+                            <h3>Личные сообщения</h3>
+                            <p>Приватные беседы один на один с шифрованием(BETA)</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="feature-card-wrapper">
+                    <a href="https://github.com/wpotoke/django_chat" target="_blank" class="feature-link">
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-code-branch"></i></div>
+                            <h3>Открытый код</h3>
+                            <p>Проект с открытым исходным кодом на GitHub</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <div class="chat-demo">
+                <div class="demo-header">
+                    <div class="demo-avatar"></div>
+                    <div class="demo-name">Xam Chat</div>
+                    <div class="demo-actions">
+                        <i class="fas fa-video"></i>
+                        <i class="fas fa-phone"></i>
+                    </div>
+                </div>
+                <div class="demo-messages">
+                    <div class="demo-msg incoming">
+                        <div class="demo-avatar small"></div>
+                        <div class="demo-bubble">Привет! Как насчет встречи завтра?</div>
+                    </div>
+                    <div class="demo-msg outgoing">
+                        <div class="demo-bubble">Отличная идея! В 15:00 подойдет?</div>
+                    </div>
+                    <div class="demo-msg incoming">
+                        <div class="demo-avatar small"></div>
+                        <div class="demo-bubble">Идеально! Отправлю локацию <i class="fas fa-map-marker-alt"></i></div>
+                    </div>
+                </div>
+                <div class="demo-input">
+                    <i class="fas fa-paperclip"></i>
+                    <input type="text" placeholder="Написать сообщение..." disabled>
+                    <i class="fas fa-microphone"></i>
+                </div>
+            </div>
+
+            <section class="how-it-works">
+                <h2 class="section-title">Как начать общение</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Создайте аккаунт</h3>
+                        <p>Быстрая регистрация за 30 секунд</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Выберите собеседника</h3>
+                        <p>Найдите друзей или создайте группу</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Начните общение</h3>
+                        <p>Пишите сообщения в реальном времени</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="about">
+                <h2 class="section-title">О проекте Xam</h2>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <i class="fab fa-python"></i>
+                        <span>Django</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-database"></i>
+                        <span>PostgreSQL</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fab fa-js"></i>
+                        <span>WebSocket</span>
+                    </div>
+                </div>
+                <p class="about-text">
+                    Xam — это современный веб-чат с акцентом на минимализм и удобство использования. 
+                    Проект находится в активной разработке, и мы открыты для ваших предложений!
+                </p>
             </section>
         </main>
 
@@ -63,10 +168,58 @@
                 <div class="footer-links">
                     <a href="#">Правила</a>
                     <a href="#">Поддержка</a>
-                    <a href="#">Контакты</a>
+                    <a href="https://github.com/wpotoke/django_chat" target="_blank" class="github-link">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
                 </div>
-                <div class="footer-copy">© 2025 Xam Chat</div>
+                <div class="footer-copy">
+                    © 2025 Xam Chat | Версия 0.9.1
+                    <span class="status-indicator online"></span>
+                </div>
             </div>
         </footer>
     </div>
+
+    <div id="particles-js"></div>
+    
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Анимация чисел
+        function animateValue(id, start, end, duration) {
+            let obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        animateValue("user-count", 0, 128, 2000);
+        animateValue("message-count", 0, 542, 2500);
+
+        // Particles.js
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#8a2be2" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5, "random": true },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#5a1a8a", "opacity": 0.4, "width": 1 },
+                "move": { "enable": true, "speed": 3 }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "repulse" },
+                    "onclick": { "enable": true, "mode": "push" }
+                }
+            }
+        });
+    </script>
 {% endblock content %}
