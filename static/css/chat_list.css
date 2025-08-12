@@ -50,32 +50,33 @@ h1 {
     outline: 2px solid var(--accent-purple);
 }
 
-.groups-list {
+.chat-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.group-item {
+.chat-item {
     display: flex;
     align-items: center;
     padding: 10px 15px;
     border-radius: 10px;
     margin-bottom: 8px;
     background-color: var(--black-3);
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
-.group-item:hover {
+.chat-item:hover {
     background-color: var(--dark-purple);
+    transform: translateX(3px);
 }
 
-.group-icon-container {
+.chat-icon-container {
     position: relative;
     margin-right: 15px;
 }
 
-.group-icon {
+.chat-icon {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -83,12 +84,12 @@ h1 {
     border: 2px solid var(--accent-purple);
 }
 
-.group-info {
+.chat-info {
     flex-grow: 1;
     min-width: 0;
 }
 
-.group-name {
+.chat-name {
     font-weight: 500;
     margin: 0 0 3px 0;
     white-space: nowrap;
@@ -96,18 +97,18 @@ h1 {
     text-overflow: ellipsis;
 }
 
-.group-members {
+.chat-meta {
     font-size: 0.8rem;
     color: var(--text-muted);
     margin: 0;
 }
 
-.group-actions {
+.chat-actions {
     display: flex;
     gap: 8px;
 }
 
-.group_option {
+.chat-option {
     padding: 6px 12px;
     border: none;
     border-radius: 15px;
@@ -115,6 +116,16 @@ h1 {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.no-chats {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-style: italic;
 }
 
 /* Индикатор онлайн статуса */

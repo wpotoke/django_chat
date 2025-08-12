@@ -4,73 +4,129 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/chat_list.css' %}">
 <style>
-    #join-{{ group.uuid }} {
+    /* Общие стили для кнопок */
+    .chat-join {
         background-color: var(--accent-purple);
         color: white;
     }
     
-    #join-{{ group.uuid }}:hover {
+    .chat-join:hover {
         background-color: var(--light-purple);
     }
     
-    #leave-{{ group.uuid }} {
+    .chat-leave {
         background-color: transparent;
         color: var(--text-muted);
         border: 1px solid var(--text-muted);
     }
     
-    #leave-{{ group.uuid }}:hover {
+    .chat-leave:hover {
         background-color: rgba(255, 0, 0, 0.1);
         color: #ff6b6b;
         border-color: #ff6b6b;
     }
     
-    #open-{{ group.uuid }} {
+    .chat-open {
         background-color: var(--medium-purple);
         color: white;
     }
     
-    #open-{{ group.uuid }}:hover {
+    .chat-open:hover {
         background-color: var(--light-purple);
+    }
+    
+    /* Специфичные стили для приватных чатов */
+    .private-chat {
+        border-left: 3px solid var(--accent-purple);
+    }
+    
+    .section-title {
+        margin-top: 30px;
+        margin-bottom: 15px;
+        color: var(--accent-purple);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>Chat Groups</h1>
-    
     <div class="search-container">
-        <input type="text" class="search-input" placeholder="Search groups..." id="group-search">
+        <input type="text" class="search-input" placeholder="Search chats..." id="chat-search">
     </div>
     
-    <ul class="groups-list">
+    <!-- Секция приватных чатов -->
+    <h2 class="section-title">Private Chats</h2>
+    <ul class="chat-list">
+        {% for chat in chats %}
+            <li class="chat-item private-chat" id="{{ chat.uuid }}">
+                <div class="chat-icon-container">
+                    {% for participant in chat.participants.all %}
+                        {% if participant != request.user %}
+                            <img src="{{ participant.profile.avatar.url }}" class="chat-icon" alt="{{ participant.username }}">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="chat-info">
+                    {% for participant in chat.participants.all %}
+                        {% if participant != request.user %}
+                            <h3 class="chat-name">{{ participant.username }}</h3>
+                            <p class="chat-meta">
+                                {% if chat.message_set.last %}
+                                    Last message: {{ chat.message_set.last.timestamp|timesince }} ago
+                                {% else %}
+                                    No messages yet
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="chat-actions">
+                    <a href="{% url 'private_chat' chat.uuid %}" class="chat-option chat-open">
+                        Open
+                    </a>
+                </div>
+            </li>
+        {% empty %}
+            <li class="no-chats">
+                No private chats found
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <!-- Секция групповых чатов -->
+    <h2 class="section-title">Group Chats</h2>
+    <ul class="chat-list">
         {% for group in groups %}
-            <li class="group-item" id="{{ group.uuid }}">
-                <div class="group-icon-container">
-                    <img src="{{ group.icon.url }}" class="group-icon" alt="{{ group.name }}">
-                    <!-- <div class="online-status"></div> --> <!-- Раскомментируйте если нужен индикатор онлайн -->
+            <li class="chat-item" id="{{ group.uuid }}">
+                <div class="chat-icon-container">
+                    <img src="{{ group.icon.url }}" class="chat-icon" alt="{{ group.name }}">
                 </div>
                 
-                <div class="group-info">
-                    <h3 class="group-name">{{ group.name }}</h3>
-                    <p class="group-members">{{ group.members.count }} members</p>
+                <div class="chat-info">
+                    <h3 class="chat-name">{{ group.name }}</h3>
+                    <p class="chat-meta">{{ group.members.count }} members</p>
                 </div>
                 
-                <div class="group-actions">
+                <div class="chat-actions">
                     {% if request.user in group.members.all %}
-                        <button id="leave-{{ group.uuid }}" class="group_option" value="leave_group {{ group.uuid }}">
+                        <button class="chat-option chat-leave" value="leave_group {{ group.uuid }}">
                             Leave
                         </button>
-                        <button id="open-{{ group.uuid }}" class="group_option" value="open_group {{ group.uuid }}">
+                        <a href="{% url 'group' group.uuid %}" class="chat-option chat-open">
                             Open
-                        </button>
+                        </a>
                     {% else %}
-                        <button id="join-{{ group.uuid }}" class="group_option" value="join_group {{ group.uuid }}">
+                        <button class="chat-option chat-join" value="join_group {{ group.uuid }}">
                             Join
                         </button>
                     {% endif %}
                 </div>
+            </li>
+        {% empty %}
+            <li class="no-chats">
+                No groups found
             </li>
         {% endfor %}
     </ul>
@@ -78,5 +134,5 @@
 {% endblock %}
 
 {% block script %}
-    <script src="{% static 'js/join_and_leave_event.js' %}"></script>
+    <script src="{% static 'js/chat_list.js' %}"></script>
 {% endblock %}
