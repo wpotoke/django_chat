@@ -7,11 +7,20 @@ const replyUsername = document.getElementById('reply-username');
 const replyToId = document.getElementById('reply-to-id');
 const cancelReply = document.getElementById('cancel-reply');
 
-function initializeChat() {
+// Определяем тип чата из URL
+function getChatType() {
+    const path = window.location.pathname;
+    if (path.includes('/groups/')) return 'group';
+    if (path.includes('/chats/')) return 'chat';
+    return null;
+}
+
+// Инициализация чата
+document.addEventListener('DOMContentLoaded', function() {
     scrollToBottom();
     setupEventListeners();
     connectWebSocket();
-}
+});
 
 function scrollToBottom() {
     chatLog.scrollTop = chatLog.scrollHeight;
@@ -19,32 +28,24 @@ function scrollToBottom() {
 
 function setupEventListeners() {
     // Обработка клика на кнопку ответа
-    chatLog.addEventListener('click', (e) => {
+    chatLog.addEventListener('click', function(e) {
         const replyBtn = e.target.closest('.reply-btn');
         if (!replyBtn) return;
         
-        const messageId = replyBtn.dataset.replyTo;
-        const username = replyBtn.dataset.username;
-        
-        if (!messageId) {
-            console.error('Reply button has no message ID');
-            return;
-        }
-        
-        replyToId.value = messageId;
-        replyUsername.textContent = username;
+        replyToId.value = replyBtn.dataset.replyTo;
+        replyUsername.textContent = replyBtn.dataset.username;
         replyInfo.style.display = 'block';
         messageInput.focus();
     });
 
     // Отмена ответа
-    cancelReply.addEventListener('click', () => {
+    cancelReply.addEventListener('click', function() {
         replyToId.value = '';
         replyInfo.style.display = 'none';
     });
 
     // Отправка по Enter
-    messageInput.addEventListener('keyup', (e) => {
+    messageInput.addEventListener('keyup', function(e) {
         if (e.key === 'Enter') sendMessage();
     });
 
@@ -52,13 +53,52 @@ function setupEventListeners() {
     submitButton.addEventListener('click', sendMessage);
 }
 
+function connectWebSocket() {
+    const chatType = getChatType();
+    if (!chatType) {
+        console.error('Не удалось определить тип чата');
+        return;
+    }
+
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const path = window.location.pathname;
+    const uuid = path.split('/')[2]; // Получаем UUID из URL
+    
+    // Формируем путь в соответствии с вашими routing.py
+    const wsPath = `${chatType}s/${uuid}/`;
+    
+    chatSocket = new WebSocket(`${protocol}${window.location.host}/ws/${wsPath}`);
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageElement = createMessageElement(data);
+        
+        messageElement.style.opacity = '0';
+        chatLog.appendChild(messageElement);
+        setTimeout(function() {
+            messageElement.style.transition = 'opacity 0.3s ease';
+            messageElement.style.opacity = '1';
+        }, 10);
+        
+        scrollToBottom();
+    };
+
+    chatSocket.onclose = function(e) {
+        console.log('WebSocket disconnected. Reconnecting...');
+        setTimeout(connectWebSocket, 2000);
+    };
+
+    chatSocket.onerror = function(err) {
+        console.error('WebSocket error:', err);
+    };
+}
+
 function createMessageElement(data) {
     const element = document.createElement('div');
     
-    if (data.status) {
+    if (data.event_type) {
         element.className = 'system-message';
-        const action = data.status === 'Join' ? 'присоединился' : 'покинул';
-        element.textContent = `${data.username} ${action} чат`;
+        element.textContent = data.message;
         return element;
     }
 
@@ -66,14 +106,14 @@ function createMessageElement(data) {
     if (data.is_own) element.classList.add('own-message');
     element.dataset.messageId = data.id;
 
-    const time = new Date(data.timestamp).toLocaleTimeString([], {
+    const time = new Date(data.timestamp).toLocaleTimeString('ru-RU', {
         hour: '2-digit', 
         minute: '2-digit'
     });
 
     element.innerHTML = `
         <div class="message-user">
-            <a href="${data.profile_url}" class="profile-link">
+            <a href="${data.profile_url}">
                 <img src="${data.avatar}" class="message-avatar" alt="${data.username}">
                 <span class="message-author">${data.username}</span>
             </a>
@@ -81,7 +121,6 @@ function createMessageElement(data) {
         <div class="message-content">
             ${data.reply_to ? `
             <div class="reply-preview">
-                <img src="${data.reply_to.avatar}" class="reply-avatar">
                 <span class="reply-to">Ответ ${data.reply_to.username}:</span>
                 <div class="reply-content">${data.reply_to.content}</div>
             </div>
@@ -105,46 +144,6 @@ function createMessageElement(data) {
     return element;
 }
 
-function connectWebSocket() {
-    if (chatSocket) {
-        chatSocket.onclose = null;
-        chatSocket.close();
-    }
-
-    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    chatSocket = new WebSocket(`${protocol}${window.location.host}${window.location.pathname}`);
-    
-    chatSocket.onopen = () => console.log("WebSocket connected");
-
-    chatSocket.onmessage = (e) => {
-        try {
-            const data = JSON.parse(e.data);
-            const messageElement = createMessageElement(data);
-            
-            // Плавное добавление нового сообщения
-            messageElement.style.opacity = '0';
-            chatLog.appendChild(messageElement);
-            setTimeout(() => {
-                messageElement.style.transition = 'opacity 0.3s ease';
-                messageElement.style.opacity = '1';
-            }, 10);
-            
-            scrollToBottom();
-        } catch (error) {
-            console.error('Error processing message:', error);
-        }
-    };
-
-    chatSocket.onclose = () => {
-        console.log("WebSocket disconnected. Reconnecting...");
-        setTimeout(connectWebSocket, 2000);
-    };
-
-    chatSocket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-    };
-}
-
 function sendMessage() {
     const message = messageInput.value.trim();
     if (!message || !chatSocket) return;
@@ -164,8 +163,6 @@ function sendMessage() {
         }
         messageInput.focus();
     } else {
-        console.error("Cannot send message - WebSocket not connected");
+        console.error("Не могу отправить сообщение - WebSocket не подключен");
     }
 }
-
-document.addEventListener('DOMContentLoaded', initializeChat);
