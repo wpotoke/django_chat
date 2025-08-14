@@ -5,6 +5,8 @@
 <link rel="stylesheet" href="{% static 'css/profile_detail.css' %}">
 {% endblock %}
 
+{% block title %}{{title}}{% endblock  %}
+
 {% block content %}
 <div class="profile-container">
         <div class="profile-header">
@@ -35,7 +37,9 @@
         </div>
         <div class="profile-actions">
             {% if user.profile.slug != profile.slug %}
-                <button class="btn-message">Написать</button>
+                <a href="{% url "private_chat" private_chat_uuid %}">
+                    <button class="btn-message">Написать</button>
+                </a>
             {% else %}
                 <button class="btn-edit">Редактировать</button>
             {% endif %}
