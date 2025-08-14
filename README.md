@@ -21,4 +21,6 @@ More features coming soon!
 - Private call
 - Group call
 - Creating groups
+- Edit ptofile
+
 
