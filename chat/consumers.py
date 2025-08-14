@@ -44,7 +44,6 @@ class ChatOperationsMixin:
             message_data["group"] = chat_obj
         else:
             message_data["private_chat"] = chat_obj
-        print(message_data, "_____________________________________")
 
         return Message.objects.create(**message_data)
 
@@ -249,3 +248,43 @@ class PrivateChatConsumer(BaseChatConsumer, AsyncWebsocketConsumer):
 
     async def private_message(self, event: Dict[str, Any]) -> None:
         await self.send_message_response(event)
+
+
+class CallConsumer(AsyncWebsocketConsumer):
+    """Обработка WebRTC-звонков через WebSocket"""
+
+    async def connect(self):
+        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        self.room_group_name = f"call_{self.room_name}"
+        self.peer_id = None
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, code):
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    async def receive(self, text_data=None, bytes_data=None):
+        try:
+            data = json.loads(text_data)
+            if data.get("type") == "register":
+                self.data.get("peer_id")
+                return None
+
+            # Пересылаем сигнал всем в комнате (кроме отправителя)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "webrtc_signal",
+                    "data": data,
+                    "sender_channel": self.channel_name,
+                },
+            )
+        except Exception as e:
+            print(f"Call error: {str(e)}")
+            traceback.print_exc()
+
+    async def webrtc_signal(self, event):
+        """Отправка сигналов WebRTC (SDP, ICE кандидаты)"""
+        if self.channel_name != event["sender_channel"]:  # Исключаем отправителя
+            await self.send(text_data=json.dumps(event["data"]))
