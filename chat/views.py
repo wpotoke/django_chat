@@ -1,11 +1,12 @@
 from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
-from chat.models import Group, Message, Event, PrivateChat
+from django.shortcuts import render, get_object_or_404
+from utils.verified_required import verified_required
+from chat.models import Group, PrivateChat
 from accounts.models import Profile
 
 
-@login_required
+@verified_required
 def home_view(request):
     return render(request, "chat/home.html")
 
