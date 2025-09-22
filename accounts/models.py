@@ -37,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         message="Phone number must be entered in the format: '+79999999999' or '89999999999'.",
     )
     phone_number = models.CharField(
-        validators=[phone_regex], max_length=12, null=True, blank=True, unique=True, verbose_name="Номер телефона"
+        validators=[phone_regex], max_length=12, null=True, blank=True, verbose_name="Номер телефона"
     )
     objects = MyUserManager()
 
