@@ -14,8 +14,17 @@ class CustomUserAdmin(UserAdmin):
     # form = UserChangeForm  Добавляем форму для редактирования
 
     # Отображение в списке
-    list_display = ("username", "email", "phone_number", "is_active", "is_staff", "is_superuser", "created")
-    list_filter = ("is_superuser", "is_staff", "is_active", "created")
+    list_display = (
+        "username",
+        "email",
+        "phone_number",
+        "is_verified",
+        "is_active",
+        "is_staff",
+        "is_superuser",
+        "created",
+    )
+    list_filter = ("is_superuser", "is_staff", "is_active", "created", "is_verified")
     search_fields = ("username", "email", "phone_number")
     ordering = ("email",)
     readonly_fields = ("created",)  # Делаем дату создания только для чтения
@@ -27,7 +36,7 @@ class CustomUserAdmin(UserAdmin):
         (
             "Права доступа",
             {
-                "fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions"),
+                "fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions", "is_verified"),
             },
         ),
         ("Важные даты", {"fields": ("last_login", "created")}),
