@@ -6,6 +6,9 @@
 | <img width="1919" height="1020" alt="Снимок экрана 2025-08-14 154559" src="https://github.com/user-attachments/assets/480a37bf-2b09-4136-8be4-8318598d8c4c" /> <img width="1919" height="1016" alt="Снимок экрана 2025-08-14 154615" src="https://github.com/user-attachments/assets/131c6baa-47bf-4f52-9466-50e92c1ba960" /> | <img width="1919" height="1014" alt="Снимок экрана 2025-08-14 155028" src="https://github.com/user-attachments/assets/7de90fe9-5f3c-4724-a5d0-48a66ccfc993" /> <img width="1859" height="1027" alt="Снимок экрана 2025-08-14 155046" src="https://github.com/user-attachments/assets/46a96fb6-bbea-4776-8c2b-e3dbfaf59c1d" /> <img width="1286" height="680" alt="Снимок экрана 2025-08-14 155154" src="https://github.com/user-attachments/assets/3a9af356-b35a-4fab-9fe2-38d0eb854a38" /> | coming coon |
 
 
+check the video(how it work)
+https://drive.google.com/file/d/1be4T1P0sfplxMkQf8S9cbd-VcyI5qafx/view?usp=drive_link
+
 
 # Chat App (In Development)
 A simple chat application for messaging with friends.
@@ -22,5 +25,6 @@ More features coming soon!
 - Group call
 - Creating groups
 - Edit ptofile
+
 
 
