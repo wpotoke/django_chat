@@ -1,3 +1,4 @@
+import uuid
 from django.core.validators import RegexValidator, FileExtensionValidator
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
@@ -27,6 +28,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
+
+    is_verified = models.BooleanField("verified", default=False)
+    verification_uuid = models.UUIDField("Unique Verification UUID", default=uuid.uuid4)
+
     phone_regex = RegexValidator(
         regex=r"^((\+7)|8)\d{10}$",
         message="Phone number must be entered in the format: '+79999999999' or '89999999999'.",
