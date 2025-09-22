@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Подтвердите почту
+{% endblock  %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/email_verify.css' %}" />
+{% endblock  %}
+
+{% block content %}
+    <div class="bg-effects" aria-hidden="true"></div>
+    <main class="page">
+    <header class="brand">
+        <div class="brand__logo" aria-hidden="true">◆</div>
+        <div class="brand__name">Xam Chat</div>
+    </header>
+
+    <section class="card" role="status" aria-live="polite">
+        <div class="card__icon" aria-hidden="true">
+        <!-- Иконка конверта -->
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#a78bfa"/>
+                <stop offset="1" stop-color="#7c3aed"/>
+            </linearGradient>
+            </defs>
+            <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z" stroke="url(#g1)" stroke-width="1.5" />
+            <path d="M4 7l8 6 8-6" stroke="url(#g1)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        </div>
+
+        <h1 class="card__title">Проверьте почту</h1>
+        <p class="card__lead">
+        Пожалуйста, зайдите в указанный почтовый ящик и перейдите по ссылке из письма —
+        после этого использование сайта будет доступно.
+        </p>
+
+        <!-- Если нужно вывести конкретный адрес, замените текст ниже -->
+        <p class="card__muted">Мы отправили письмо на ваш адрес электронной почты.</p>
+
+        <div class="actions">
+        <a class="btn btn-primary" href="https:gmail.com" target="_blank" rel="noopener">
+            Открыть почту
+        </a>
+        <a class="btn btn-ghost" href="#">
+            Отправить письмо повторно
+        </a>
+        </div>
+
+        <ul class="tips">
+        <li>Проверьте папки «Спам», «Рассылки» или «Промоакции».</li>
+        <li>Если письмо не пришло в течение 1 мин — запросите отправку повторно.</li>
+        </ul>
+    </section>
+
+    <footer class="footer">
+        <a class="link" href="/">На главную</a>
+        <span class="dot">•</span>
+        <a class="link" href="mailto:support@example.com">Нужна помощь?</a>
+    </footer>
+    </main>
+{% endblock content %}

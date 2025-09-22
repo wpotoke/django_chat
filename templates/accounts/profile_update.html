@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/profile_detail.css' %}">
+<link rel="stylesheet" href="{% static 'css/profile_update.css' %}">
+<style>
+    /* Стили для particles фона */
+    #particles-js {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<!-- Particles фон -->
+<div id="particles-js"></div>
+
+<!-- Основной контент -->
+<div class="profile-container">
+    <div class="profile-form">
+        <!-- Заголовок с аватаром -->
+        <div class="form-header">
+            <div class="form-avatar">
+                <img src="{{ form.instance.avatar.url }}" alt="Текущий аватар" id="avatar-preview">
+            </div>
+            <h2 class="form-title">Редактирование профиля</h2>
+        </div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Секция данных пользователя -->
+            <div class="form-section">
+                <h4>📱 Данные пользователя</h4>
+                
+                <div class="form-group">
+                    <label for="id_username" class="form_label">Имя пользователя</label>
+                    <input type="text" name="username" id="id_username" class="form-control" 
+                           value="{{user_form.instance.username}}"
+                           placeholder="Введите имя пользователя">
+                    {% for error in user_form.username.errors %}
+                        {% if error != "This field is required." %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_phone_number" class="form_label">Телефон</label>
+                    <input type="text" name="phone_number" id="id_phone_number" class="form-control" 
+                           value="{{ user_form.instance.phone_number|default:'' }}" 
+                           placeholder="+7 (XXX) XXX-XX-XX">
+                    {% for error in user_form.phone_number.errors %}
+                        {% if error != "This field is required." %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Секция профиля -->
+            <div class="form-section">
+                <h4>👤 Данные профиля</h4>
+                
+                <div class="form-group">
+                    <label for="id_first_name" class="form_label">Имя</label>
+                    <input type="text" name="first_name" id="id_first_name" class="form-control" 
+                           value="{{ form.instance.first_name}}" 
+                           placeholder="Введите ваше имя">
+                    {% for error in form.first_name.errors %}
+                        {% if error != "This field is required." %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_last_name" class="form_label">Фамилия</label>
+                    <input type="text" name="last_name" id="id_last_name" class="form-control" 
+                           value="{{ form.instance.last_name}}" 
+                           placeholder="Введите вашу фамилию">
+                    {% for error in form.last_name.errors %}
+                        {% if error != "This field is required." %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_bio" class="form_label">О себе</label>
+                    <textarea name="bio" id="id_bio" class="form-control" rows="3" 
+                              placeholder="Расскажите о себе...">{{ form.instance.bio|default:'' }}</textarea>
+                    {% for error in form.bio.errors %}
+                        {% if error != "This field is required." %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_birthday" class="form_label">Дата рождения</label>
+                    <input type="date" name="birthday" id="id_birthday" class="form-control" 
+                           value="{{ form.instance.birthday|date:'Y-m-d'|default:'' }}">
+                    {% for error in form.birthday.errors %}
+                        {% if error != "This field is required." %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form_label">Смена аватара</label>
+                    <div class="file-upload-section">
+                        <div class="file-input-wrapper">
+                            <label for="id_avatar" class="file-input-label">
+                                📁 Выберите новый аватар
+                            </label>
+                            <input type="file" name="avatar" id="id_avatar" accept="image/*">
+                        </div>
+                        <div class="file-hint">Рекомендуемый размер: 300x300 px</div>
+                        {% for error in form.avatar.errors %}
+                            {% if error != "This field is required." %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-save">💾 Сохранить</button>
+                <a href="{% url 'profile_detail' slug=user.profile.slug %}" class="btn-cancel">❌ Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+    // Инициализация particles.js
+    document.addEventListener('DOMContentLoaded', function() {
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 120, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#af90e9" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5, "random": true },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#b23476", "opacity": 0.4, "width": 1 },
+                "move": { "enable": true, "speed": 2 }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "repulse" },
+                    "onclick": { "enable": true, "mode": "push" }
+                }
+            }
+        });
+    });
+
+    // Предпросмотр аватара
+    document.getElementById('id_avatar').addEventListener('change', function(event) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatar-preview').src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    });
+</script>
+{% endblock %}

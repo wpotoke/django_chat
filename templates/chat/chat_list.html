@@ -8,6 +8,11 @@
     .chat-join {
         background-color: var(--accent-purple);
         color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 8px;
     }
     
     .chat-join:hover {
@@ -18,6 +23,10 @@
         background-color: transparent;
         color: var(--text-muted);
         border: 1px solid var(--text-muted);
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 8px;
     }
     
     .chat-leave:hover {
@@ -29,6 +38,12 @@
     .chat-open {
         background-color: var(--medium-purple);
         color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
     }
     
     .chat-open:hover {
@@ -45,10 +60,34 @@
         margin-bottom: 15px;
         color: var(--accent-purple);
     }
+    
+    .chat-actions {
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Стили для particles фона */
+    #particles-js {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+    
+    .container {
+        position: relative;
+        z-index: 1;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Particles фон -->
+<div id="particles-js"></div>
+
+<!-- Основной контент -->
 <div class="container">
     <div class="search-container">
         <input type="text" class="search-input" placeholder="Search chats..." id="chat-search">
@@ -58,7 +97,7 @@
     <h2 class="section-title">Private Chats</h2>
     <ul class="chat-list">
         {% for chat in chats %}
-            <li class="chat-item private-chat" id="{{ chat.uuid }}">
+            <li class="chat-item private-chat" id="chat-{{ chat.uuid }}">
                 <div class="chat-icon-container">
                     {% for participant in chat.participants.all %}
                         {% if participant != request.user %}
@@ -99,7 +138,7 @@
     <h2 class="section-title">Group Chats</h2>
     <ul class="chat-list">
         {% for group in groups %}
-            <li class="chat-item" id="{{ group.uuid }}">
+            <li class="chat-item" id="group-{{ group.uuid }}">
                 <div class="chat-icon-container">
                     <img src="{{ group.icon.url }}" class="chat-icon" alt="{{ group.name }}">
                 </div>
@@ -109,16 +148,16 @@
                     <p class="chat-meta">{{ group.members.count }} members</p>
                 </div>
                 
-                <div class="chat-actions">
+                <div class="chat-actions" id="actions-{{ group.uuid }}">
                     {% if request.user in group.members.all %}
-                        <button class="chat-option chat-leave" value="leave_group {{ group.uuid }}">
+                        <button class="chat-option chat-leave group_option" value="leave_group {{ group.uuid }}">
                             Leave
                         </button>
                         <a href="{% url 'group' group.uuid %}" class="chat-option chat-open">
                             Open
                         </a>
                     {% else %}
-                        <button class="chat-option chat-join" value="join_group {{ group.uuid }}">
+                        <button class="chat-option chat-join group_option" value="join_group {{ group.uuid }}">
                             Join
                         </button>
                     {% endif %}
@@ -134,5 +173,43 @@
 {% endblock %}
 
 {% block script %}
-    <script src="{% static 'js/chat_list.js' %}"></script>
+    <script src="{% static 'js/join_and_leave_event.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Инициализация particles.js при загрузке страницы
+        function animateValue(id, start, end, duration) {
+            let obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+        animateValue("user-count", 0, 128, 2000);
+        animateValue("message-count", 0, 542, 2500);
+        // Particles.js
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 220, "density": { "enable": true, "value_area": 1100 } },
+                "color": { "value": "#af90e9" },
+                "shape": { "type": "star" },
+                "opacity": { "value": 0.5, "random": true },
+                "size": { "value": 4, "random": true },
+                "line_linked": { "enable": true, "distance": 100, "color": "#b23476", "opacity": 0.4, "width": 1 },
+                "move": { "enable": true, "speed": 2 }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": false, "mode": "repulse" },
+                    "onclick": { "enable": true, "mode": "push" }
+                }
+            }
+        });
+    </script>
 {% endblock %}
