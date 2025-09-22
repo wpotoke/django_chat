@@ -19,6 +19,7 @@ db.sqlite3
 # App directories
 cache/
 media/
+images/
 
 # Test and coverage
 .coverage
