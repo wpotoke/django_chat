@@ -1,0 +1,336 @@
+/* Основные стили */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.chat-container {
+  display: flex;
+  height: 100vh;
+  max-width: none;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  font-family: 'Arial', sans-serif;
+  background-color: #111;
+}
+
+/* Сайдбар с участниками */
+.sidebar {
+  width: 250px;
+  height: 100%;
+  background-color: #222;
+  color: white;
+  padding: 15px;
+  border-right: 1px solid #e3b9f4;
+  overflow-y: auto;
+}
+
+.members-title {
+  color: #fff;
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dea9ee;
+}
+
+.members-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.member-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #edbef8;
+  color: #ddd;
+}
+
+/* Область чата */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #111;
+  height: 100%;
+}
+
+#chat-log {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  background-color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 15px;
+}
+
+/* Стили сообщений */
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 80%;
+  position: relative;
+}
+
+/* Контейнер аватарки и имени */
+.message-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.message-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #3a2b3c;
+  margin-bottom: 5px;
+  border: 1px solid #5a4a5c;
+}
+
+.message-author {
+  color: #908295;
+  font-size: 0.75em;
+  text-align: center;
+  transition: color 0.2s;
+}
+
+.profile-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-link:hover {
+  text-decoration: none;
+}
+
+.message-user a {
+  text-decoration: none;
+  color: #908295;
+}
+
+.message-user a:hover .message-author {
+  color: #c7a6d3;
+}
+
+.message-author:hover {
+  color: #c7a6d3;
+}
+
+/* Облачко сообщения */
+.message-content {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100% - 62px);
+}
+
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 18px;
+  position: relative;
+  word-wrap: break-word;
+  line-height: 1.4;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Сообщения других пользователей (слева) */
+.message:not(.own-message) .message-bubble {
+  background-color: #222;
+  color: #eee;
+  border-top-left-radius: 4px;
+}
+
+/* Свои сообщения (справа) */
+.message.own-message {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message.own-message .message-bubble {
+  background-color: #3a2b3c;
+  color: #fff;
+  border-top-right-radius: 4px;
+}
+
+.message-time {
+  color: #908295;
+  font-size: 0.7em;
+  margin-top: 4px;
+  align-self: flex-end;
+}
+
+/* Системные сообщения */
+.system-message {
+  color: #ffffff;
+  text-align: center;
+  margin: 10px 0;
+  font-size: 0.9em;
+  width: 100%;
+}
+
+/* Область ввода */
+.input-area {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  background-color: #222;
+  border-top: 1px solid #edbef8;
+  gap: 8px;
+}
+
+/* Стили для ответов */
+#reply-info {
+  display: none;
+  background-color: #3a2b3c;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: -5px;
+}
+
+.reply-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #c7a6d3;
+  font-size: 0.9em;
+}
+
+
+.reply-preview {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  padding: 5px;
+  background-color: rgba(58, 43, 60, 0.2);
+  border-radius: 5px;
+}
+
+.reply-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+}
+
+.reply-to {
+  font-weight: bold;
+  color: #c7a6d3;
+  margin-right: 5px;
+}
+
+.reply-content {
+  color: #bbb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.message.own-message .reply-btn {
+  display: none !important;
+}
+
+
+.cancel-reply-btn {
+  background: none;
+  border: none;
+  color: #ddd;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.cancel-reply-btn:hover {
+  color: #fff;
+}
+
+.message-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.reply-btn {
+  background: none;
+  border: none;
+  color: #908295;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.reply-btn:hover {
+  opacity: 1;
+  color: #c7a6d3;
+}
+
+/* Поле ввода сообщения */
+.message-input-container {
+  display: flex;
+  border: 1px solid #977099;
+  border-radius: 4px;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px 15px;
+  background-color: #3a2b3c;
+  color: white;
+  border: none;
+  outline: none;
+  border-radius: 4px 0 0 4px;
+}
+
+.send-button {
+  padding: 0 15px;
+  background-color: #3a2b3c;
+  color: white;
+  border: none;
+  border-left: 1px solid #977099;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border-radius: 0 4px 4px 0;
+}
+
+.send-button:hover {
+  background-color: #4a3b4c;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #222;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Анимация */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
