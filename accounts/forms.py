@@ -60,6 +60,13 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get("phone_number")
+        if phone:  # проверяем только если номер не пустой
+            if User.objects.filter(phone_number=phone).exclude(id=self.instance.id).exists():
+                raise forms.ValidationError("Этот номер телефона уже занят")
+        return phone
+
 
 class UserLoginForm(forms.Form):
     email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "input", "placeholder": "Enter your Email"}))
