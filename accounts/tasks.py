@@ -13,9 +13,10 @@ def send_verification_email(user_id):
     try:
         user = User.objects.get(pk=user_id)
 
+        params = reverse("verify", kwargs={"uuid": str(user.verification_uuid)})
+
         context = {
-            "verification_link": "http://127.0.0.1:8000"
-            f"{reverse('verify', kwargs={'uuid': str(user.verification_uuid)})}",
+            "verification_link": f"http://127.0.0.1:8000{params}",
             "username": user.username,
         }
 
