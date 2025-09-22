@@ -46,13 +46,13 @@ class Group(models.Model):
     def get_absolute_url(self):
         return reverse("group", args=[str(self.uuid)])
 
-    def add_user_to_group(self, user: User):
+    def add_user_to_group(self, user):
         """Вспомогательная функция для добавления пользователя в группу и создания объекта"""
         self.members.add(user)
         self.event_set.create(type="Join", user=user)
         self.save()
 
-    def remove_user_from_group(self, user: User):
+    def remove_user_from_group(self, user):
         """Функция для удаления членов группы, когда они выходят из группы чата"""
         self.members.remove(user)
         self.event_set.create(type="Left", user=user)
@@ -73,6 +73,7 @@ class Message(models.Model):
         related_name="replies",
         verbose_name="Ответ на сообщение",
     )
+    count_message = models.BigIntegerField(default=0, blank=False, null=False, verbose_name="Счетчик сообщений в день")
 
     def __str__(self) -> str:
         # pylint: disable=no-member
