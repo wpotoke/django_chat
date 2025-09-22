@@ -14,7 +14,7 @@ app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     "send-report-every-day": {
-        "task": "chat.tasks.send-report-every-single-minute",
-        "schedule": crontab(hour=23, minute=58),
+        "task": "chat.tasks.send_count_messages_per_day",
+        "schedule": crontab(hour=0, minute=18),
     }
 }
