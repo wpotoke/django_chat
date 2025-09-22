@@ -1,12 +1,14 @@
 from typing import Any
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth import login
+from django.db import transaction
 from django.urls import reverse_lazy
+from django.http import Http404
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, UpdateView
 from django_channels_chat import settings
-from accounts.forms import UserCreationForm, UserLoginForm
+from accounts.forms import UserCreationForm, UserLoginForm, ProfileUpdateForm, UserUpdateForm
 from accounts.models import Profile
 from chat.models import PrivateChat
 
@@ -36,13 +38,14 @@ class UserRegisterView(CreateView):
 class UserLoginView(LoginView):
     form_class = UserLoginForm
     template_name = "accounts/user_login.html"
-    success_url = reverse_lazy("home")
-    redirect_authenticated_user = True
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Авторизация"
         return context
+
+    def get_success_url(self):
+        return reverse_lazy("home")
 
     def form_valid(self, form):
         remember_me = form.cleaned_data.get("remember_me", False)
@@ -69,3 +72,53 @@ class ProfileDetailView(DetailView):
         context["title"] = f"Профиль: {profile.user.username}"
         context["private_chat_uuid"] = chat.uuid
         return context
+
+
+def verify(request, uuid):
+    try:
+        user = User.objects.get(verification_uuid=uuid, is_verified=False)
+    except User.DoesNotExist as e:
+        raise Http404("User does not exist or is already verified") from e
+
+    user.is_verified = True
+    user.save()
+    return render(request, "chat/home.html")
+
+
+def email_verify(request):
+    return render(request, "info/email_info.html")
+
+
+class UserLogoutView(LogoutView):
+    next_page = "user_login"
+
+
+class ProfileUpdateView(UpdateView):
+    model = Profile
+    form_class = ProfileUpdateForm
+    template_name = "accounts/profile_update.html"
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context["user_form"] = UserUpdateForm(self.request.POST, instance=self.request.user)
+        else:
+            context["user_form"] = UserUpdateForm(instance=self.request.user)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        user_form = context["user_form"]
+        with transaction.atomic():
+            if all([form.is_valid(), user_form.is_valid()]):
+                user_form.save()
+                form.save()
+            else:
+                return self.render_to_response(context)
+        return super().form_valid(form)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("profile_detail", kwargs={"slug": self.object.slug})
