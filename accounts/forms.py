@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from django_recaptcha.fields import ReCaptchaField
+from accounts.models import Profile
 
 
 User = get_user_model()
@@ -86,3 +87,24 @@ class UserLoginForm(forms.Form):
 
     def get_user(self):
         return self.user_cache
+
+
+class UserUpdateForm(forms.ModelForm):
+    username = forms.CharField(max_length=30)
+    phone_number = forms.CharField(max_length=12, required=False)
+
+    class Meta:
+        model = User
+        fields = ["username", "phone_number"]
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=200)
+    last_name = forms.CharField(max_length=255)
+    avatar = forms.ImageField(required=False)
+    bio = forms.CharField(max_length=192, required=False)
+    birthday = forms.DateField(required=False)
+
+    class Meta:
+        model = Profile
+        fields = ["first_name", "last_name", "avatar", "bio", "birthday"]
